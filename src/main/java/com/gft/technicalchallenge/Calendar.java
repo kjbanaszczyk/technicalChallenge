@@ -1,15 +1,10 @@
 package com.gft.technicalchallenge;
 
-import org.springframework.cglib.core.Local;
-
 import java.time.LocalDate;
 import java.util.Iterator;
-import java.util.function.Consumer;
 
-/**
- * Created by klbk on 20/10/2016.
- */
-class Calendar implements Iterable<LocalDate> {
+
+final class Calendar implements Iterable<LocalDate> {
 
     private LocalDate date;
 
@@ -49,16 +44,6 @@ class Calendar implements Iterable<LocalDate> {
                 date = date.plusDays(5);
                 return date.minusDays(5);
             }
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException("Not collection iterator");
-        }
-
-        @Override
-        public void forEachRemaining(Consumer<? super LocalDate> action) {
-            throw new UnsupportedOperationException("Infinite iterator");
         }
     }
 }
