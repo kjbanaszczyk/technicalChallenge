@@ -11,7 +11,7 @@ import static org.junit.Assert.*;
 
 public class FileTreeTest {
 
-    FileTree tree;
+    private FileTree tree;
 
     @Before
     public void setupTree(){
@@ -27,17 +27,27 @@ public class FileTreeTest {
 
     @Test
     public void shouldPrintTreeAsExpected(){
-        String expected = "\t1\n" +
-                "\t\t2\n" +
-                "\t\t\t3\n" +
-                "\t\t\t\t31\n" +
-                "\t\t\t\t32\n" +
-                "\t\t\t\t33\n" +
-                "\t\t22\n" +
-                "\t\t23\n" +
-                "\t\t22\n" +
-                "\t\t\t23\n";
+        String expected = "\t-folder:1\n" +
+                "\t\t-folder:2\n" +
+                "\t\t\t-folder:3\n" +
+                "\t\t\t\t-file:31\n" +
+                "\t\t\t\t-file:32\n" +
+                "\t\t\t\t-file:33\n" +
+                "\t\t-file:22\n" +
+                "\t\t-file:23\n" +
+                "\t\t-folder:22\n" +
+                "\t\t\t-file:23\n";
+
         String returned=tree.toString();
+
+        assertThat(returned,is(expected));
+    }
+
+    @Test
+    public void shouldReturnExpectedSizeOfTree(){
+        int expected = 10;
+
+        int returned = tree.size();
 
         assertThat(returned,is(expected));
     }
@@ -46,18 +56,48 @@ public class FileTreeTest {
     public void shouldRemoveGivenElementWhichIsNotReference(){
         FileTree toRemove = new FileTree.NodeBuilder("3")
                 .withChildren("31").withChildren("32").withChildren("33").build();
-        String expected = "\t1\n" +
-                "\t\t2\n" +
-                "\t\t22\n" +
-                "\t\t23\n" +
-                "\t\t22\n" +
-                "\t\t\t23\n";
+        int expected = 6;
 
 
         tree.removeNode(toRemove);
-        String returned = tree.toString();
+        int returned = tree.size();
 
         assertThat(returned,is(expected));
+
+    }
+
+    @Test
+    public void shouldReturnSameIfElementToRemoveDontExist(){
+        FileTree toRemove = new FileTree.NodeBuilder("2")
+                .withChildren("31").withChildren("32").withChildren("33").build();
+
+        int expected = 10;
+        tree.removeNode(toRemove);
+        int actual = tree.size();
+
+        assertThat(actual,is(expected));
+
+    }
+
+    @Test
+    public void shouldReturnTrueIfGivenTreeIsNode(){
+        FileTree Node = new FileTree.NodeBuilder("2")
+                .withChildren("31").withChildren("32").withChildren("33").build();
+
+        boolean actual = Node.isNode();
+
+        assertThat(true, is(actual));
+
+    }
+
+
+    @Test
+    public void shouldReturnTrueIfGivenTreeIsLeaf(){
+        FileTree Node = new FileTree.NodeBuilder("2").build();
+        
+        boolean actual = Node.isLeaf();
+
+        assertThat(true, is(actual));
 
     }
 

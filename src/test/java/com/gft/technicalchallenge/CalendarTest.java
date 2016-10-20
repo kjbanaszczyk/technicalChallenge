@@ -3,15 +3,14 @@ package com.gft.technicalchallenge;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class CalendarTest {
 

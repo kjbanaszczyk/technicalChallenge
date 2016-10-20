@@ -1,21 +1,12 @@
 package com.gft.technicalchallenge;
 
-import javax.swing.tree.TreeNode;
 import java.util.LinkedList;
 
 
 final class FileTree implements Tree<FileTree> {
 
-    public String getName() {
+    private String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setChildren(LinkedList<FileTree> children) {
-        this.children = children;
     }
 
     private String name;
@@ -33,6 +24,14 @@ final class FileTree implements Tree<FileTree> {
 
     public void addNode(FileTree node){
         this.children.add(node);
+    }
+
+    int size(){
+        int size = 1;
+        for(FileTree child : getChildren()){
+            size+=child.size();
+        }
+        return size;
     }
 
     @Override
@@ -74,7 +73,7 @@ final class FileTree implements Tree<FileTree> {
         for(int i=0; i<=depth; i++){
             tabs+="\t";
         }
-        String returned=tabs+name+"\n";
+        String returned=tabs + (isNode() ? "-folder:" : "-file:") + name+"\n";
         for(FileTree node : children)
             returned+=node.print(depth+1);
         return returned;
