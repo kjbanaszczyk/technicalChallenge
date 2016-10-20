@@ -5,9 +5,9 @@ import java.time.LocalDate;
 /**
  * Created by klbk on 20/10/2016.
  */
-public class Main {
+public class TestThreads {
 
-    public static void main(String... args){
+    public static void test(String... args){
 
         Calendar calendar = new Calendar(LocalDate.of(2016,10,20));
 
