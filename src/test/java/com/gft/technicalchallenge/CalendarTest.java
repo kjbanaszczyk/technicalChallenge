@@ -17,6 +17,7 @@ public class CalendarTest {
 
     private Calendar calendar;
     private Iterator<LocalDate> iterator;
+
     @Before
     public void setUp() throws Exception {
         calendar = new Calendar(LocalDate.of(2016,10,20));
@@ -60,16 +61,6 @@ public class CalendarTest {
             list2.add(iterator2.next());
         }
         assertThat(list1, Matchers.equalTo(list2));
-    }
-
-    @Test
-    public void testIfExceptionIsThrownWhileRemove(){
-        assertThatThrownBy(() -> iterator.remove()).isInstanceOf(UnsupportedOperationException.class);
-    }
-
-    @Test
-    public void testIfExceptionIsThrownWhileForEach(){
-        assertThatThrownBy(() -> iterator.forEachRemaining(b -> b.minusDays(2))).isInstanceOf(UnsupportedOperationException.class);
     }
 
 }

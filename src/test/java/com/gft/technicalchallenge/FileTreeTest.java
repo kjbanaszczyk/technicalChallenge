@@ -4,6 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
+import javax.swing.tree.TreeNode;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -38,6 +40,25 @@ public class FileTreeTest {
         String returned=tree.toString();
 
         assertThat(returned,is(expected));
+    }
+
+    @Test
+    public void shouldRemoveGivenElementWhichIsNotReference(){
+        FileTree toRemove = new FileTree.NodeBuilder("3")
+                .withChildren("31").withChildren("32").withChildren("33").build();
+        String expected = "\t1\n" +
+                "\t\t2\n" +
+                "\t\t22\n" +
+                "\t\t23\n" +
+                "\t\t22\n" +
+                "\t\t\t23\n";
+
+
+        tree.removeNode(toRemove);
+        String returned = tree.toString();
+
+        assertThat(returned,is(expected));
+
     }
 
 }

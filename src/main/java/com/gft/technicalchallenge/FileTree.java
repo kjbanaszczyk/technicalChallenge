@@ -1,9 +1,22 @@
 package com.gft.technicalchallenge;
 
+import javax.swing.tree.TreeNode;
 import java.util.LinkedList;
 
 
-class FileTree implements Tree<FileTree> {
+final class FileTree implements Tree<FileTree> {
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setChildren(LinkedList<FileTree> children) {
+        this.children = children;
+    }
 
     private String name;
 
@@ -23,8 +36,14 @@ class FileTree implements Tree<FileTree> {
     }
 
     @Override
-    public void removeNode(FileTree node) {
-
+    public boolean removeNode(FileTree node) {
+        if(children.remove(node)) return true;
+        else{
+            for(FileTree child : children){
+                if(child.removeNode(node)) return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -40,6 +59,14 @@ class FileTree implements Tree<FileTree> {
     @Override
     public String toString(){
         return print(0);
+    }
+
+    @Override
+    public boolean equals(Object o){
+        if(this==o) return true;
+        if(!this.getClass().equals(o.getClass())) return false;
+        final FileTree other = (FileTree) o;
+        return this.name.equals(other.getName()) && this.getChildren().equals(other.getChildren());
     }
 
     private String print(int depth){
