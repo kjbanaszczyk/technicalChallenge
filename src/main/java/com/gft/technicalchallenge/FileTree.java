@@ -23,6 +23,11 @@ class FileTree implements Tree<FileTree> {
     }
 
     @Override
+    public void removeNode(FileTree node) {
+
+    }
+
+    @Override
     public boolean isNode() {
         return !getChildren().isEmpty();
     }
