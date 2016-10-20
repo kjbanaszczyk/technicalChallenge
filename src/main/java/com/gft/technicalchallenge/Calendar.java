@@ -43,11 +43,11 @@ class Calendar implements Iterable<LocalDate> {
         public LocalDate next() {
             if(date.getDayOfWeek().getValue()==2) {
                 date = date.plusDays(2);
-                return date;
+                return date.minusDays(2);
             }
             else {
                 date = date.plusDays(5);
-                return date;
+                return date.minusDays(5);
             }
         }
 

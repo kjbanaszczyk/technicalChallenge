@@ -9,7 +9,7 @@ public class TestThreads {
 
     public static void test(String... args){
 
-        Calendar calendar = new Calendar(LocalDate.of(2016,10,20));
+        Calendar calendar = new Calendar(LocalDate.of(2016,10,19));
 
         CalendarThread thread = new CalendarThread(calendar.iterator(),500,"t1");
         CalendarThread thread1 = new CalendarThread(calendar.iterator(),1000,"t2");
