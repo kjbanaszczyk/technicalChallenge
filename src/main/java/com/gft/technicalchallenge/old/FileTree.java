@@ -1,9 +1,12 @@
-package com.gft.technicalchallenge;
+package com.gft.technicalchallenge.old;
 
+import com.gft.technicalchallenge.TreeIterator;
+
+import java.util.Iterator;
 import java.util.LinkedList;
 
 
-final class FileTree implements Tree<FileTree> {
+public final class FileTree implements Tree1<FileTree> {
 
     private String getName() {
         return name;
@@ -18,7 +21,7 @@ final class FileTree implements Tree<FileTree> {
 
     private LinkedList<FileTree> children;
 
-    private LinkedList<FileTree> getChildren() {
+    public LinkedList<FileTree> getChildren() {
         return children;
     }
 
@@ -26,7 +29,7 @@ final class FileTree implements Tree<FileTree> {
         this.children.add(node);
     }
 
-    int size(){
+    public int size(){
         int size = 1;
         for(FileTree child : getChildren()){
             size+=child.size();
@@ -79,25 +82,30 @@ final class FileTree implements Tree<FileTree> {
         return returned;
     }
 
-    static class NodeBuilder{
+    @Override
+    public Iterator<FileTree> iterator() {
+        return new TreeIterator<>(this);
+    }
+
+    public static class NodeBuilder{
 
         FileTree rootNode;
 
-        NodeBuilder(String name){
+        public NodeBuilder(String name){
             rootNode = new FileTree(name);
         }
 
-        NodeBuilder withChildren(FileTree node){
+        public NodeBuilder withChildren(FileTree node){
             rootNode.addNode(node);
             return this;
         }
 
-        NodeBuilder withChildren(String name){
+        public NodeBuilder withChildren(String name){
             rootNode.addNode(new FileTree(name));
             return this;
         }
 
-        FileTree build(){
+        public FileTree build(){
             return rootNode;
         }
 

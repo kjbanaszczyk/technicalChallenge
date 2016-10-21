@@ -1,21 +1,19 @@
 package com.gft.technicalchallenge;
 
+import com.gft.technicalchallenge.old.FileTree;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 
-import javax.swing.tree.TreeNode;
+import java.io.File;
+import java.util.Iterator;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 public class FileTreeTest {
 
-    private FileTree tree;
-
-    @Before
-    public void setupTree(){
-        tree = new FileTree.NodeBuilder("1").withChildren(
+    private static FileTree buildFileTreeWith10Nodes(){
+        return new FileTree.NodeBuilder("1").withChildren(
                 new FileTree.NodeBuilder("2").withChildren(
                         new FileTree.NodeBuilder("3")
                                 .withChildren("31").withChildren("32").withChildren("33").build()
@@ -27,6 +25,7 @@ public class FileTreeTest {
 
     @Test
     public void shouldPrintTreeAsExpected(){
+        FileTree tree = buildFileTreeWith10Nodes();
         String expected = "\t-folder:1\n" +
                 "\t\t-folder:2\n" +
                 "\t\t\t-folder:3\n" +
@@ -37,7 +36,6 @@ public class FileTreeTest {
                 "\t\t-file:23\n" +
                 "\t\t-folder:22\n" +
                 "\t\t\t-file:23\n";
-
         String returned=tree.toString();
 
         assertThat(returned,is(expected));
@@ -45,6 +43,7 @@ public class FileTreeTest {
 
     @Test
     public void shouldReturnExpectedSizeOfTree(){
+        FileTree tree = buildFileTreeWith10Nodes();
         int expected = 10;
 
         int returned = tree.size();
@@ -54,6 +53,8 @@ public class FileTreeTest {
 
     @Test
     public void shouldRemoveGivenElementWhichIsNotReference(){
+
+        FileTree tree = buildFileTreeWith10Nodes();
         FileTree toRemove = new FileTree.NodeBuilder("3")
                 .withChildren("31").withChildren("32").withChildren("33").build();
         int expected = 6;
@@ -68,6 +69,8 @@ public class FileTreeTest {
 
     @Test
     public void shouldReturnSameIfElementToRemoveDontExist(){
+
+        FileTree tree = buildFileTreeWith10Nodes();
         FileTree toRemove = new FileTree.NodeBuilder("2")
                 .withChildren("31").withChildren("32").withChildren("33").build();
 
@@ -90,11 +93,10 @@ public class FileTreeTest {
 
     }
 
-
     @Test
     public void shouldReturnTrueIfGivenTreeIsLeaf(){
         FileTree Node = new FileTree.NodeBuilder("2").build();
-        
+
         boolean actual = Node.isLeaf();
 
         assertThat(true, is(actual));
