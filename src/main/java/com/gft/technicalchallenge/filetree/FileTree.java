@@ -1,4 +1,4 @@
-package com.gft.technicalchallenge.old;
+package com.gft.technicalchallenge.filetree;
 
 import com.gft.technicalchallenge.TreeIterator;
 
@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 
-public final class FileTree implements Tree1<FileTree> {
+public final class FileTree implements AbstractFileTree<FileTree> {
 
     private String getName() {
         return name;

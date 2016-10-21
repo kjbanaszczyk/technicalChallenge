@@ -7,11 +7,11 @@ public class TreeIterator<T extends Tree<T>> implements Iterator<T> {
 
     private Stack<Iterator<T>> currentIterators;
     private Iterator<T> currentIterator;
-
+    private T node;
     public TreeIterator(T node){
         currentIterators = new Stack<>();
         currentIterators.push(node.getChildren().iterator());
-        currentIterator = currentIterators.peek();
+        this.node=node;
     }
 
     @Override
@@ -23,6 +23,10 @@ public class TreeIterator<T extends Tree<T>> implements Iterator<T> {
 
     @Override
     public T next() {
+        if(currentIterator==null){
+            currentIterator = currentIterators.peek();
+            return node;
+        }
         if(currentIterator.hasNext()){
             T peekNext = currentIterator.next();
             if(peekNext.isNode()) {

@@ -1,11 +1,7 @@
 package com.gft.technicalchallenge;
 
-import com.gft.technicalchallenge.old.FileTree;
-import org.junit.Before;
+import com.gft.technicalchallenge.filetree.FileTree;
 import org.junit.Test;
-
-import java.io.File;
-import java.util.Iterator;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
