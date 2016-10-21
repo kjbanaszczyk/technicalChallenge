@@ -12,16 +12,17 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TreeIteratorTest {
+public class NodeIteratorTest {
 
     @Mock
-    private StubTree mockedTree = mock(StubTree.class);
+    private StubNode mockedTree = mock(StubNode.class);
 
     @Mock
-    private StubTree mockedChildrenNode = mock(StubTree.class);
+    private StubNode mockedChildrenNode = mock(StubNode.class);
 
     @Mock
-    private StubTree mockedChildrensLeaf = mock(StubTree.class);
+    private StubNode mockedChildrensLeaf = mock(StubNode.class);
+
 
     @Test
     public void shouldIterateThroughWholeTree() throws Exception {
@@ -31,7 +32,9 @@ public class TreeIteratorTest {
         when(mockedChildrenNode.getChildren()).thenReturn(new LinkedList<>(Arrays.asList(mockedChildrensLeaf, mockedChildrensLeaf)));
         when(mockedTree.getChildren()).thenReturn(new LinkedList<>(Arrays.asList(mockedChildrenNode, mockedChildrensLeaf, mockedChildrensLeaf)));
 
-        TreeIterator iterator = new TreeIterator<>(mockedTree);
+
+        IterableTree<StubNode> iterableTree = new IterableTree<>(mockedTree);
+        Iterator<StubNode> iterator = iterableTree.iterator();
         int size=0;
         while(iterator.hasNext()) {
             iterator.next();
@@ -47,14 +50,15 @@ public class TreeIteratorTest {
         int expectedChildrenSize = 3;
 
         final int[] returnedChildrenSize = {0};
-        TreeIterator<StubTree> iterator = new TreeIterator<>(mockedTree);
+        IterableTree<StubNode> iterableTree = new IterableTree<>(mockedTree);
+        Iterator<StubNode> iterator = iterableTree.iterator();
 
         iterator.next().getChildren().forEach(elem -> returnedChildrenSize[0] +=1);
 
         assertThat(returnedChildrenSize[0], is(expectedChildrenSize));
     }
 
-    private class StubTree implements Tree<StubTree>{
+    private class StubNode implements Node<StubNode> {
 
         @Override
         public boolean isNode() {
@@ -62,19 +66,10 @@ public class TreeIteratorTest {
         }
 
         @Override
-        public boolean isLeaf() {
-            return false;
-        }
-
-        @Override
-        public Iterable<StubTree> getChildren() {
+        public LinkedList<StubNode> getChildren() {
             return null;
         }
 
-        @Override
-        public Iterator<StubTree> iterator() {
-            return null;
-        }
     }
 
 }

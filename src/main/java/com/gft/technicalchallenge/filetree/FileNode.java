@@ -1,12 +1,9 @@
 package com.gft.technicalchallenge.filetree;
 
-import com.gft.technicalchallenge.TreeIterator;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 
 
-public final class FileTree implements AbstractFileTree<FileTree> {
+public final class FileNode implements AbstractFileNode<FileNode> {
 
     private String getName() {
         return name;
@@ -14,35 +11,35 @@ public final class FileTree implements AbstractFileTree<FileTree> {
 
     private String name;
 
-    private FileTree(String name){
+    private FileNode(String name){
         this.name = name;
         children = new LinkedList<>();
     }
 
-    private LinkedList<FileTree> children;
+    private LinkedList<FileNode> children;
 
-    public LinkedList<FileTree> getChildren() {
+    public LinkedList<FileNode> getChildren() {
         return children;
     }
 
-    public void addNode(FileTree node){
+    public void addFolder(FileNode node){
         this.children.add(node);
     }
 
     public int size(){
         int size = 1;
-        for(FileTree child : getChildren()){
+        for(FileNode child : getChildren()){
             size+=child.size();
         }
         return size;
     }
 
     @Override
-    public boolean removeNode(FileTree node) {
+    public boolean removeFolder(FileNode node) {
         if(children.remove(node)) return true;
         else{
-            for(FileTree child : children){
-                if(child.removeNode(node)) return true;
+            for(FileNode child : children){
+                if(child.removeFolder(node)) return true;
             }
         }
         return false;
@@ -54,11 +51,6 @@ public final class FileTree implements AbstractFileTree<FileTree> {
     }
 
     @Override
-    public boolean isLeaf() {
-        return !isNode();
-    }
-
-    @Override
     public String toString(){
         return print(0);
     }
@@ -67,7 +59,7 @@ public final class FileTree implements AbstractFileTree<FileTree> {
     public boolean equals(Object o){
         if(this==o) return true;
         if(!this.getClass().equals(o.getClass())) return false;
-        final FileTree other = (FileTree) o;
+        final FileNode other = (FileNode) o;
         return this.name.equals(other.getName()) && this.getChildren().equals(other.getChildren());
     }
 
@@ -77,35 +69,30 @@ public final class FileTree implements AbstractFileTree<FileTree> {
             tabs+="\t";
         }
         String returned=tabs + (isNode() ? "-folder:" : "-file:") + name+"\n";
-        for(FileTree node : children)
+        for(FileNode node : children)
             returned+=node.print(depth+1);
         return returned;
     }
 
-    @Override
-    public Iterator<FileTree> iterator() {
-        return new TreeIterator<>(this);
-    }
-
     public static class NodeBuilder{
 
-        FileTree rootNode;
+        FileNode rootNode;
 
         public NodeBuilder(String name){
-            rootNode = new FileTree(name);
+            rootNode = new FileNode(name);
         }
 
-        public NodeBuilder withChildren(FileTree node){
-            rootNode.addNode(node);
+        public NodeBuilder withChildren(FileNode node){
+            rootNode.addFolder(node);
             return this;
         }
 
         public NodeBuilder withChildren(String name){
-            rootNode.addNode(new FileTree(name));
+            rootNode.addFolder(new FileNode(name));
             return this;
         }
 
-        public FileTree build(){
+        public FileNode build(){
             return rootNode;
         }
 

@@ -1,9 +1,8 @@
 package com.gft.technicalchallenge;
 
-public interface Tree<T extends Tree> extends Iterable<T> {
+public interface Node<T extends Node> {
 
     boolean isNode();
-    boolean isLeaf();
     Iterable<T> getChildren();
 
 }
