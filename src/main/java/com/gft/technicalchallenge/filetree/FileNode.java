@@ -45,7 +45,6 @@ public final class FileNode implements AbstractFileNode<FileNode> {
         return false;
     }
 
-    @Override
     public boolean isNode() {
         return !getChildren().isEmpty();
     }

@@ -24,6 +24,19 @@ public class CalendarTest {
     }
 
     @Test
+    public void testtest(){
+        Double[] array = new Double[100];
+
+        for(int i=0; i<100; i++){
+                    Double quantity = (double) i;
+                    array[i] = quantity;
+                }
+        for(int i=0; i<10; i++){
+            System.out.println(array[i]);
+        }
+    }
+
+    @Test
     public void shouldReturnedValuesBeExpectedValuesFromThursday() {
 
         List<LocalDate> expected = new ArrayList<>(Arrays.asList(new LocalDate[]{LocalDate.of(2016,10,20),LocalDate.of(2016,10,25),LocalDate.of(2016,10,27),LocalDate.of(2016,11,1)}));

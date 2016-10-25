@@ -1,73 +1,98 @@
 package com.gft.technicalchallenge;
 
+import org.assertj.core.api.Assertions;
+import org.assertj.core.util.Lists;
 import org.junit.Test;
-import org.mockito.Mock;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import java.util.NoSuchElementException;
 
 public class NodeIteratorTest {
 
-    @Mock
-    private StubNode mockedTree = mock(StubNode.class);
+    private static StubNode getTreeWithEmptyChildren(){
+        LinkedList<StubNode> emptyChildren = new LinkedList<>();
 
-    @Mock
-    private StubNode mockedChildrenNode = mock(StubNode.class);
+        return new StubNode(emptyChildren,"1");
+    }
 
-    @Mock
-    private StubNode mockedChildrensLeaf = mock(StubNode.class);
+    private static StubNode getTreeOfElevenElements(){
+        LinkedList<StubNode> emptyChildren = new LinkedList<>();
+        LinkedList<StubNode> thirdDepthChildren = new LinkedList<>(Arrays.asList(new StubNode(emptyChildren,"5"), new StubNode(emptyChildren,"6")));
+        LinkedList<StubNode> secondDepthChildren = new LinkedList<>(Arrays.asList(new StubNode(thirdDepthChildren,"5"), new StubNode(emptyChildren,"6")));
+        LinkedList<StubNode> firstDepthChildren = new LinkedList<>(Arrays.asList(new StubNode(emptyChildren,"2"),
+                new StubNode(secondDepthChildren,"3"), new StubNode(secondDepthChildren,"4")));
 
+        return new StubNode(firstDepthChildren,"1");
+    }
 
     @Test
-    public void shouldIterateThroughWholeTree() throws Exception {
+    public void shouldConvertToListConsistingOfAllElementsOfATreeWithoutRoot() throws Exception {
+        StubNode node = getTreeOfElevenElements();
 
-        when(mockedChildrensLeaf.isNode()).thenReturn(false);
-        when(mockedChildrenNode.isNode()).thenReturn(true);
-        when(mockedChildrenNode.getChildren()).thenReturn(new LinkedList<>(Arrays.asList(mockedChildrensLeaf, mockedChildrensLeaf)));
-        when(mockedTree.getChildren()).thenReturn(new LinkedList<>(Arrays.asList(mockedChildrenNode, mockedChildrensLeaf, mockedChildrensLeaf)));
-
-
-        IterableTree<StubNode> iterableTree = new IterableTree<>(mockedTree);
+        IterableTree<StubNode> iterableTree = new IterableTree<>(node);
         Iterator<StubNode> iterator = iterableTree.iterator();
-        int size=0;
-        while(iterator.hasNext()) {
+
+        Assertions.assertThat(Lists.newArrayList(iterator).size()).isEqualTo(11);
+    }
+
+    @Test
+    public void shouldStoreRootOfTree(){
+        StubNode node = getTreeOfElevenElements();
+
+        IterableTree<StubNode> iterableTree = new IterableTree<>(node);
+
+        Assertions.assertThat(iterableTree.getRoot()).isEqualTo(node);
+    }
+
+    @Test
+    public void shouldNotReturnRootOfTree(){
+        StubNode node = getTreeOfElevenElements();
+
+        IterableTree<StubNode> iterableTree = new IterableTree<>(node);
+        Iterator<StubNode> iterator = iterableTree.iterator();
+
+        Assertions.assertThat(Lists.newArrayList(iterator).contains(node)).isFalse();
+    }
+
+    @Test
+    public void shouldHasNextReturnFalseIfChildrenIsEmpty(){
+        StubNode node = getTreeWithEmptyChildren();
+
+        IterableTree<StubNode> iterableTree = new IterableTree<>(node);
+        Iterator<StubNode> iterator = iterableTree.iterator();
+
+        Assertions.assertThat(iterator.hasNext()).isFalse();
+    }
+
+    @Test
+    public void shouldThrowNoSuchElementExceptionAfterLastElement(){
+        StubNode node = getTreeOfElevenElements();
+
+        IterableTree<StubNode> iterableTree = new IterableTree<>(node);
+        Iterator<StubNode> iterator = iterableTree.iterator();
+
+        while(iterator.hasNext())
             iterator.next();
-            size++;
-        }
 
-        assertThat(size,is(6));
+        Assertions.assertThatThrownBy(iterator::next).isInstanceOf(NoSuchElementException.class);
     }
 
-    @Test
-    public void shouldReturnExpectedFirstElement(){
-        when(mockedTree.getChildren()).thenReturn(new LinkedList<>(Arrays.asList(mockedChildrensLeaf, mockedChildrensLeaf, mockedChildrensLeaf)));
-        int expectedChildrenSize = 3;
+    private static class StubNode implements Node<StubNode> {
 
-        final int[] returnedChildrenSize = {0};
-        IterableTree<StubNode> iterableTree = new IterableTree<>(mockedTree);
-        Iterator<StubNode> iterator = iterableTree.iterator();
+        String id;
 
-        iterator.next().getChildren().forEach(elem -> returnedChildrenSize[0] +=1);
+        LinkedList<StubNode> children;
 
-        assertThat(returnedChildrenSize[0], is(expectedChildrenSize));
-    }
-
-    private class StubNode implements Node<StubNode> {
-
-        @Override
-        public boolean isNode() {
-            return false;
+        StubNode(LinkedList<StubNode> children, String id){
+            this.children = children;
+            this.id = id;
         }
 
         @Override
         public LinkedList<StubNode> getChildren() {
-            return null;
+            return children;
         }
 
     }

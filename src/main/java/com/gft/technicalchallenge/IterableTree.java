@@ -1,59 +1,57 @@
 package com.gft.technicalchallenge;
 
+import com.sun.istack.internal.NotNull;
+
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Stack;
 
 class IterableTree<T extends Node<T>> implements Iterable<T> {
+    @NotNull
+    private T root;
 
-    private T node;
+    IterableTree(T root){
+        this.root = root;
+    }
 
-    IterableTree(T node){
-        this.node=node;
+    T getRoot(){
+        return root;
     }
 
     @Override
     public Iterator<T> iterator() {
-        return new TreeIterator<>(node);
+        return new TreeIterator<>(root);
     }
 
     private class TreeIterator<F extends Node<F>> implements Iterator<F> {
 
         private Stack<Iterator<F>> currentIterators;
-        private Iterator<F> currentIterator;
-        private F node;
 
         TreeIterator(F node){
             currentIterators = new Stack<>();
             currentIterators.push(node.getChildren().iterator());
-            this.node=node;
         }
 
         @Override
         public boolean hasNext() {
-            for (Iterator<F> it : currentIterators)
-                if (it.hasNext()) return true;
-            return false;
+            return currentIterators.peek().hasNext();
         }
 
         @Override
         public F next() {
-            if (currentIterator == null) {
-                currentIterator = currentIterators.peek();
-                return node;
+
+            if(!hasNext())
+                throw new NoSuchElementException();
+
+            F Node = currentIterators.peek().next();
+            if (Node.getChildren().iterator().hasNext()) {
+                currentIterators.push(Node.getChildren().iterator());
             }
-            if (currentIterator.hasNext()) {
-                F peekNext = currentIterator.next();
-                if (peekNext.isNode()) {
-                    currentIterators.push(peekNext.getChildren().iterator());
-                    currentIterator = currentIterators.peek();
-                }
-                return peekNext;
-            } else {
+            if (!currentIterators.isEmpty() && !currentIterators.peek().hasNext()) {
                 currentIterators.pop();
-                if (!currentIterators.isEmpty())
-                    currentIterator = currentIterators.peek();
-                return next();
             }
+
+            return Node;
         }
     }
 }
