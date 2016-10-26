@@ -23,31 +23,34 @@ class IterableTree<T extends Node<T>> implements Iterable<T> {
 
     private class TreeIterator<F extends Node<F>> implements Iterator<F> {
 
-        private Stack<Iterator<F>> currentIterators;
+        // contains only non-empty iterators.
+        private Stack<Iterator<F>> knownIterators;
 
         TreeIterator(F node){
-            currentIterators = new Stack<>();
-            currentIterators.push(node.getChildren().iterator());
+            knownIterators = new Stack<>();
+
+            if (!node.getChildren().iterator().hasNext()) return;
+
+            knownIterators.push(node.getChildren().iterator());
         }
 
         @Override
         public boolean hasNext() {
-            return currentIterators.peek().hasNext();
+            return !knownIterators.isEmpty();
         }
 
         @Override
         public F next() {
 
-            if(!hasNext())
+            if (knownIterators.isEmpty())
                 throw new NoSuchElementException();
 
-            F node = currentIterators.peek().next();
+            Iterator<F> current = knownIterators.peek();
+            F node = current.next();
+            if (!current.hasNext()) knownIterators.pop();
 
             if (node.getChildren().iterator().hasNext()) {
-                currentIterators.push(node.getChildren().iterator());
-            }
-            if (!currentIterators.isEmpty() && !currentIterators.peek().hasNext()) {
-                currentIterators.pop();
+                knownIterators.push(node.getChildren().iterator());
             }
 
             return node;
