@@ -16,8 +16,14 @@ public class NodeIteratorTest {
 
         return new StubNode(emptyChildren,"1");
     }
-
-    private static StubNode getTreeOfElevenElements(){
+    /** 1 <br>
+     * /\ \ <br>
+     * 2 3 4 <br>
+     *  /\  \\ <br>
+     *  5 6 5 6 <br>
+     * /\   /\ <br>
+     * 5 6  5 6  <br> **/
+    private static StubNode getTreeOfTwelveElements(){
         LinkedList<StubNode> emptyChildren = new LinkedList<>();
         LinkedList<StubNode> thirdDepthChildren = new LinkedList<>(Arrays.asList(new StubNode(emptyChildren,"5"), new StubNode(emptyChildren,"6")));
         LinkedList<StubNode> secondDepthChildren = new LinkedList<>(Arrays.asList(new StubNode(thirdDepthChildren,"5"), new StubNode(emptyChildren,"6")));
@@ -29,7 +35,7 @@ public class NodeIteratorTest {
 
     @Test
     public void shouldConvertToListConsistingOfAllElementsOfATreeWithoutRoot() throws Exception {
-        StubNode node = getTreeOfElevenElements();
+        StubNode node = getTreeOfTwelveElements();
 
         IterableTree<StubNode> iterableTree = new IterableTree<>(node);
         Iterator<StubNode> iterator = iterableTree.iterator();
@@ -39,7 +45,7 @@ public class NodeIteratorTest {
 
     @Test
     public void shouldStoreRootOfTree(){
-        StubNode node = getTreeOfElevenElements();
+        StubNode node = getTreeOfTwelveElements();
 
         IterableTree<StubNode> iterableTree = new IterableTree<>(node);
 
@@ -48,7 +54,7 @@ public class NodeIteratorTest {
 
     @Test
     public void shouldNotReturnRootOfTree(){
-        StubNode node = getTreeOfElevenElements();
+        StubNode node = getTreeOfTwelveElements();
 
         IterableTree<StubNode> iterableTree = new IterableTree<>(node);
         Iterator<StubNode> iterator = iterableTree.iterator();
@@ -68,7 +74,7 @@ public class NodeIteratorTest {
 
     @Test
     public void shouldThrowNoSuchElementExceptionAfterLastElement(){
-        StubNode node = getTreeOfElevenElements();
+        StubNode node = getTreeOfTwelveElements();
 
         IterableTree<StubNode> iterableTree = new IterableTree<>(node);
         Iterator<StubNode> iterator = iterableTree.iterator();

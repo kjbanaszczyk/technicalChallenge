@@ -1,13 +1,11 @@
 package com.gft.technicalchallenge;
 
-import com.sun.istack.internal.NotNull;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 
 class IterableTree<T extends Node<T>> implements Iterable<T> {
-    @NotNull
+
     private T root;
 
     IterableTree(T root){
@@ -43,15 +41,16 @@ class IterableTree<T extends Node<T>> implements Iterable<T> {
             if(!hasNext())
                 throw new NoSuchElementException();
 
-            F Node = currentIterators.peek().next();
-            if (Node.getChildren().iterator().hasNext()) {
-                currentIterators.push(Node.getChildren().iterator());
+            F node = currentIterators.peek().next();
+
+            if (node.getChildren().iterator().hasNext()) {
+                currentIterators.push(node.getChildren().iterator());
             }
             if (!currentIterators.isEmpty() && !currentIterators.peek().hasNext()) {
                 currentIterators.pop();
             }
 
-            return Node;
+            return node;
         }
     }
 }
