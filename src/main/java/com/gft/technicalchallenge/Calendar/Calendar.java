@@ -1,14 +1,14 @@
-package com.gft.technicalchallenge;
+package com.gft.technicalchallenge.Calendar;
 
 import java.time.LocalDate;
 import java.util.Iterator;
 
 
-final class Calendar implements Iterable<LocalDate> {
+public final class Calendar implements Iterable<LocalDate> {
 
     private LocalDate date;
 
-    Calendar(LocalDate date){
+    public Calendar(LocalDate date){
         this.date = date;
     }
 

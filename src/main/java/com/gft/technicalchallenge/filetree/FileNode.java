@@ -11,7 +11,7 @@ public final class FileNode implements AbstractFileNode<FileNode> {
 
     private String name;
 
-    private FileNode(String name){
+    FileNode(String name){
         this.name = name;
         children = new LinkedList<>();
     }

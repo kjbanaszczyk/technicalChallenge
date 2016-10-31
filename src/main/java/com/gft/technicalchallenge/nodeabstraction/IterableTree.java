@@ -1,18 +1,18 @@
-package com.gft.technicalchallenge;
+package com.gft.technicalchallenge.nodeabstraction;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 
-class IterableTree<T extends Node<T>> implements Iterable<T> {
+public class IterableTree<T extends Node<T>> implements Iterable<T> {
 
     private T root;
 
-    IterableTree(T root){
+    public IterableTree(T root){
         this.root = root;
     }
 
-    T getRoot(){
+    public T getRoot(){
         return root;
     }
 
@@ -47,6 +47,7 @@ class IterableTree<T extends Node<T>> implements Iterable<T> {
 
             Iterator<F> current = knownIterators.peek();
             F node = current.next();
+
             if (!current.hasNext()) knownIterators.pop();
 
             if (node.getChildren().iterator().hasNext()) {

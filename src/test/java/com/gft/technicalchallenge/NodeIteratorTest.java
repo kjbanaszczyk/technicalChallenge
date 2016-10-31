@@ -1,5 +1,7 @@
 package com.gft.technicalchallenge;
 
+import com.gft.technicalchallenge.nodeabstraction.IterableTree;
+import com.gft.technicalchallenge.nodeabstraction.Node;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.Test;

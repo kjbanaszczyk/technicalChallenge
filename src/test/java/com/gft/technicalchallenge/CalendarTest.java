@@ -1,5 +1,6 @@
 package com.gft.technicalchallenge;
 
+import com.gft.technicalchallenge.Calendar.Calendar;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;

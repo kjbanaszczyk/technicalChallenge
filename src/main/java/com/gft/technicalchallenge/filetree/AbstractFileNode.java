@@ -1,6 +1,6 @@
 package com.gft.technicalchallenge.filetree;
 
-import com.gft.technicalchallenge.Node;
+import com.gft.technicalchallenge.nodeabstraction.Node;
 
 interface AbstractFileNode<T extends Node> extends Node {
 
