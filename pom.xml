@@ -76,6 +76,12 @@
 			<artifactId>commons-io</artifactId>
 			<version>1.3.2</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/io.reactivex/rxjava-async-util -->
+		<dependency>
+			<groupId>io.reactivex</groupId>
+			<artifactId>rxjava-async-util</artifactId>
+			<version>0.21.0</version>
+		</dependency>
 
 	</dependencies>
 

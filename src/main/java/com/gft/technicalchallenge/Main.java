@@ -1,31 +1,20 @@
 package com.gft.technicalchallenge;
 
-import com.gft.technicalchallenge.filetree.FileTree;
-import com.gft.technicalchallenge.nodeabstraction.IterableTree;
+import com.gft.technicalchallenge.reactivex.TreeObserver;
 import com.gft.technicalchallenge.reactivex.TreeReactiveStream;
+import rx.Observable;
 
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.WatchService;
+import java.nio.file.Paths;
+import java.nio.file.WatchEvent;
 
 public class Main {
 
     public static void main(String... args) throws InterruptedException, IOException {
 
-        FileTree tree = new FileTree("C:\\Intel");
-
-        IterableTree<FileTree> iterableTree = new IterableTree<>(tree);
-
-        WatchService service = FileSystems.getDefault().newWatchService();
-
-        TreeReactiveStream treeReactiveStream = new TreeReactiveStream(iterableTree,service);
-
-        treeReactiveStream.startWatchingFiles();
-
-        while(true){
-
-            System.out.print(service.take().pollEvents().size());
-        }
+        TreeReactiveStream treeReactiveStream = new TreeReactiveStream();
+        Observable<WatchEvent<?>> event = treeReactiveStream.convertDirectoryToObservable(Paths.get("C:\\Program Files"));
+        event.subscribe(new TreeObserver());
 
     }
 

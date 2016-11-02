@@ -2,18 +2,18 @@ package com.gft.technicalchallenge.reactivex;
 import com.gft.technicalchallenge.filetree.FileTree;
 import com.gft.technicalchallenge.nodeabstraction.IterableTree;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
+import rx.Observable;
 import rx.observers.TestSubscriber;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.WatchService;
+import java.nio.file.*;
+import java.util.concurrent.TimeUnit;
 
 public class TreeReactiveStreamTest {
 
@@ -37,20 +37,19 @@ public class TreeReactiveStreamTest {
         if(!(new File(path+pathToResource+secondFile).createNewFile()))
             SetUpDirectoryWithTwoFolders();
     }
-//
-//    @Test
-//    public void shouldEmitRegisteredDirectories() throws IOException {
-//
-//        WatchService service = FileSystems.getDefault().newWatchService();
-//        TestSubscriber<FileTree> testSubscriber = new TestSubscriber<>();
-//        FileTree tree = new FileTree(path+pathToResource+firstDirectory);
-//        IterableTree<FileTree> iterableTree = new IterableTree<>(tree);
-//
-//        TreeReactiveStream stream = new TreeReactiveStream(iterableTree,service);
-//        stream.registerAllFiles();
-//        stream.(testSubscriber);
-//
-//        testSubscriber.assertCompleted();
-//        testSubscriber.assertReceivedOnNext(Lists.newArrayList(iterableTree.iterator()));
-//    }
+
+    @Test
+    public void shouldEmitEventOnNewDirectory() throws IOException, InterruptedException {
+
+        TestSubscriber<WatchEvent> testSubscriber = new TestSubscriber<>();
+        TreeReactiveStream stream = new TreeReactiveStream();
+
+        Observable<WatchEvent<?>> observable = stream.convertDirectoryToObservable(Paths.get(path + pathToResource));
+
+        Files.createFile(Paths.get(path+pathToResource+firstDirectory+"\\test"));
+
+        observable.first().subscribe(testSubscriber);
+
+        testSubscriber.assertValueCount(1);
+    }
 }

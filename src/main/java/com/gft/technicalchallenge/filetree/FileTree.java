@@ -3,80 +3,37 @@ package com.gft.technicalchallenge.filetree;
 import com.gft.technicalchallenge.nodeabstraction.Node;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.LinkedList;
 
 public class FileTree implements Node<FileTree> {
 
-    private File file;
+
     private Path path;
-    private WatchKey key;
-    private ConcurrentLinkedQueue<FileTree> children;
 
-    public FileTree(String path){
-        this.path = Paths.get(path);
-        this.file = this.path.toFile();
-        children = new ConcurrentLinkedQueue<>();
+    public Path getPath() {
+        return path;
     }
 
-    private FileTree(File file) {
-        this.file=file;
-        this.path=file.toPath();
-        children = new ConcurrentLinkedQueue<>();
-    }
-
-    public boolean isRegistered(){
-        return this.key!=null;
-    }
-
-    public FileTree registerFileTree(WatchService service) throws IOException {
-            if(file.isDirectory() && key==null) {
-                try{key = path.register(service, StandardWatchEventKinds.ENTRY_CREATE,
-                        StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);}
-                catch(AccessDeniedException e){
-                    System.out.println("Acces denied to: " + e.getMessage().split(":")[1]);
-                }
-            }
-            return this;
-    }
-
-    public List<WatchEvent<?>> obtainEvents(){
-
-        if(key==null)
-            return new ArrayList<>();
-
-        List<WatchEvent<?>> list = key.pollEvents();
-        key.reset();
-
-        return list;
-    }
-
-    public void removeChildrenNode(FileTree node){
-        this.children.remove(node);
-    }
-
-    public void addChildrenNode(FileTree node){
-        this.children.add(node);
+    public FileTree(Path path){
+        this.path = path;
     }
 
     @Override
     public String toString(){
-        return file.toString();
+        return path.toAbsolutePath().toString();
     }
 
     @Override
     public Iterable<FileTree> getChildren() {
-        File[] files = file.listFiles();
-        if(file.isDirectory() && files!=null) {
-            this.children.clear();
-            for(File children : files) {
-                this.children.add(new FileTree(children));
+        File[] files = path.toFile().listFiles();
+        LinkedList<FileTree> fileTrees = new LinkedList<>();
+        if(files != null)
+        for(File children : files) {
+                fileTrees.add(new FileTree(children.toPath()));
             }
-        }
-        return this.children;
+        return fileTrees;
     }
 
     @Override
