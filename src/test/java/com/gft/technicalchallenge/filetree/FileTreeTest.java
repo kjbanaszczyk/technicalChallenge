@@ -1,17 +1,12 @@
 package com.gft.technicalchallenge.filetree;
 
-import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runners.model.InitializationError;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileTreeTest {
@@ -102,9 +97,5 @@ public class FileTreeTest {
 
         Assertions.assertThat(tree.equals(tree2)).isFalse();
     }
-
-
-
-
 
 }

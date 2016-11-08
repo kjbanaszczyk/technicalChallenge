@@ -16,9 +16,9 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
 
         TreeReactiveStream stream = reactiveStreams.get(path.toString());
 
-        if(stream==null) {
+        if (stream == null) {
             stream = new TreeReactiveStream(path);
-            reactiveStreams.put(path.toString(),stream);
+            reactiveStreams.put(path.toString(), stream);
         }
 
         return stream;
@@ -34,9 +34,7 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
                 e.printStackTrace();
             }
         });
-    }
-
-    public void removeAll() {
         this.reactiveStreams.clear();
     }
+
 }

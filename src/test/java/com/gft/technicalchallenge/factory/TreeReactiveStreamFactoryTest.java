@@ -21,7 +21,7 @@ public class TreeReactiveStreamFactoryTest {
         TreeReactiveStream streamFirst = treeReactiveStreamFactory.getReactiveStream(Paths.get("C://"));
         TreeReactiveStream streamSecond = treeReactiveStreamFactory.getReactiveStream(Paths.get("C://"));
 
-        Assertions.assertThat(streamFirst).isEqualTo(streamSecond);
+        Assertions.assertThat(streamFirst).isSameAs(streamSecond);
     }
 
     @Test
@@ -32,7 +32,7 @@ public class TreeReactiveStreamFactoryTest {
         TreeReactiveStream streamFirst = treeReactiveStreamFactory.getReactiveStream(Paths.get("C://"));
         TreeReactiveStream streamSecond = treeReactiveStreamFactory.getReactiveStream(Paths.get("D://"));
 
-        Assertions.assertThat(streamFirst).isNotEqualTo(streamSecond);
+        Assertions.assertThat(streamFirst).isNotSameAs(streamSecond);
 
     }
 
@@ -49,6 +49,5 @@ public class TreeReactiveStreamFactoryTest {
         Assertions.assertThatThrownBy(streamSecond::createObservable).isInstanceOf(ClosedWatchServiceException.class);
 
     }
-
 
 }

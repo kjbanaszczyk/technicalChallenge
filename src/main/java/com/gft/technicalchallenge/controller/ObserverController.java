@@ -44,7 +44,6 @@ public final class ObserverController {
     @RequestMapping(path = "/stop", method = RequestMethod.POST)
     public void stopObserving() throws IOException {
         treeReactiveStreamFactory.close();
-        treeReactiveStreamFactory.removeAll();
         treeObserverFactory.removeAll();
         subscriptions.forEach(Subscription::unsubscribe);
     }
