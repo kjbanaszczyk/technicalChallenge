@@ -1,10 +1,23 @@
 package com.gft.technicalchallenge.reactivex;
 
+import com.gft.technicalchallenge.model.Event;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import rx.Observer;
 
-import java.nio.file.WatchEvent;
+public final class TreeObserver implements Observer<Event> {
 
-public class TreeObserver implements Observer<WatchEvent> {
+    private SimpMessagingTemplate simpMessagingTemplate;
+
+    public String getEndPoint() {
+        return endPoint;
+    }
+
+    private String endPoint;
+
+    public TreeObserver(String endPoint, SimpMessagingTemplate simpMessagingTemplate) {
+        this.endPoint = endPoint;
+        this.simpMessagingTemplate=simpMessagingTemplate;
+    }
 
     @Override
     public void onCompleted() {
@@ -17,7 +30,9 @@ public class TreeObserver implements Observer<WatchEvent> {
     }
 
     @Override
-    public void onNext(WatchEvent event) {
-        System.out.println(event.kind() + ": " + event.context());
+    public void onNext(Event event) {
+        System.out.println(event.getEventType() + event.getPath() + event.getFileName());
+        System.out.println("/events/get/" + endPoint);
+        simpMessagingTemplate.convertAndSend("/events/get/" + endPoint, event);
     }
 }

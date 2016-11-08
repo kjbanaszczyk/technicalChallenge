@@ -9,8 +9,8 @@ import org.junit.runners.model.InitializationError;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
-import java.util.List;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class FileTreeTest {
 

@@ -1,21 +1,19 @@
 package com.gft.technicalchallenge.reactivex;
-import com.gft.technicalchallenge.filetree.FileTree;
-import com.gft.technicalchallenge.nodeabstraction.IterableTree;
+import com.gft.technicalchallenge.model.Event;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runners.model.InitializationError;
 import rx.Observable;
 import rx.observers.TestSubscriber;
+import rx.subjects.ReplaySubject;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
-import java.util.concurrent.TimeUnit;
 
-public class TreeReactiveStreamTest {
+public final class TreeReactiveStreamTest {
 
     private final static String pathToResource = "\\src\\test\\Resources\\FileTree";
     private final static String firstDirectory = "\\Directory1";
@@ -38,18 +36,49 @@ public class TreeReactiveStreamTest {
             SetUpDirectoryWithTwoFolders();
     }
 
-    @Test
+    @Test(timeout = 1000)
     public void shouldEmitEventOnNewDirectory() throws IOException, InterruptedException {
 
-        TestSubscriber<WatchEvent> testSubscriber = new TestSubscriber<>();
-        TreeReactiveStream stream = new TreeReactiveStream();
+        ReplaySubject<Event> testSubscriber = ReplaySubject.create();
+        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(path + pathToResource));
 
-        Observable<WatchEvent<?>> observable = stream.convertDirectoryToObservable(Paths.get(path + pathToResource));
-
+        Observable<Event> observable = stream.createObservable();
+        observable.subscribe(testSubscriber);
         Files.createFile(Paths.get(path+pathToResource+firstDirectory+"\\test"));
 
-        observable.first().subscribe(testSubscriber);
+        testSubscriber.toBlocking().first();
 
-        testSubscriber.assertValueCount(1);
     }
+
+    @Test(timeout = 1000)
+    public void shouldRegisterNewDirectory() throws IOException, InterruptedException {
+
+        ReplaySubject<Event> testSubscriber = ReplaySubject.create();
+        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(path + pathToResource));
+
+        Observable<Event> observable = stream.createObservable();
+        observable.subscribe(testSubscriber);
+        if(new File(path+pathToResource+firstDirectory+"\\testDir").mkdir())
+            Files.createFile(Paths.get(path+pathToResource+firstDirectory+"\\testDir"+"\\test"));
+
+        // we expected to watch element created by event related to subfolder.
+        testSubscriber.toBlocking().first();
+    }
+
+    @Test
+    public void shouldConvertDirectoryToObservable() throws IOException {
+
+        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(path + pathToResource));
+        Assertions.assertThat(stream.createObservable()).isInstanceOf(Observable.class);
+
+    }
+
+    @Test
+    public void shouldCloseResources() throws Exception {
+        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(path + pathToResource));
+        stream.close();
+
+        Assertions.assertThatThrownBy(stream::createObservable).isInstanceOf(ClosedWatchServiceException.class);
+    }
+
 }

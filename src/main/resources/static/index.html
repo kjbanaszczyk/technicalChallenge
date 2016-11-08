@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello WebSocket</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./main.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="//cdn.jsdelivr.net/sockjs/1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="./app.js"></script>
+</head>
+<body ng-app="directoryWatcher">
+<noscript><h2 style="color: #ff0000">Seems your browser doesn't support Javascript! Websocket relies on Javascript being
+    enabled. Please enable
+    Javascript and reload this page!</h2></noscript>
+<div id="main-content" class="container">
+    <header class="row" ng-controller="MenuController">
+        <form class="form-inline">
+            <button add-watcher class="btn btn-default">Add watcher</button>
+            <button ng-click="closeWatchers()" class="btn btn-default">Close Watchers</button>
+        </form>
+    </header>
+    <section>
+        <div id="watchers-space" class="row">
+            <Watcher></Watcher>
+        </div>
+    </section>
+</div>
+</body>
+</html>

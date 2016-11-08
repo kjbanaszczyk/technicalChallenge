@@ -4,11 +4,9 @@ import com.gft.technicalchallenge.nodeabstraction.Node;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.LinkedList;
 
 public class FileTree implements Node<FileTree> {
-
 
     private Path path;
 
