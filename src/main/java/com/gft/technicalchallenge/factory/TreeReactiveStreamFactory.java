@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 
 @Service
-public class TreeReactiveStreamFactory implements AutoCloseable {
+public final class TreeReactiveStreamFactory implements AutoCloseable {
 
     private final HashMap<String, TreeReactiveStream> reactiveStreams = new HashMap<>();
 

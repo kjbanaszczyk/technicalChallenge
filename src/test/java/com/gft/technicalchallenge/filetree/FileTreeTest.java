@@ -14,11 +14,11 @@ import java.nio.file.Paths;
 
 public class FileTreeTest {
 
-    private final static String pathToResource = "\\src\\test\\Resources\\FileTree";
-    private final static String firstDirectory = "\\Directory1";
-    private final static String firstFile = "\\Directory1\\emptyFile.txt";
-    private final static String secondDirectory = "\\Directory1\\Directory2";
-    private final static String secondFile = "\\Directory1\\file2";
+    private final static String pathToResource = "/src/test/Resources/FileTree";
+    private final static String firstDirectory = "/Directory1";
+    private final static String firstFile = "/Directory1/emptyFile.txt";
+    private final static String secondDirectory = "/Directory1/Directory2";
+    private final static String secondFile = "/Directory1/file2";
     private final static String path = new File("").getAbsolutePath();
 
     @Before
