@@ -59,7 +59,7 @@ public class FileTreeTest {
 
         String actualToString = tree.toString();
 
-        Assertions.assertThat(actualToString).isEqualTo(path+pathToResource+firstDirectory+firstFile);
+        Assertions.assertThat(actualToString).isEqualTo((path+pathToResource+firstDirectory+firstFile).replace('/', '\\'));
     }
 
 //    @Test
