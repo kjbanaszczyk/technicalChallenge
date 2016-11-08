@@ -4,7 +4,9 @@ import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.junit.runners.model.InitializationError;
 
 import java.io.File;
@@ -14,30 +16,15 @@ import java.nio.file.Paths;
 
 public class FileTreeTest {
 
-    private final static String pathToResource = "/src/test/Resources/FileTree";
-    private final static String firstDirectory = "/Directory1";
-    private final static String firstFile = "/Directory1/emptyFile.txt";
-    private final static String secondDirectory = "/Directory1/Directory2";
-    private final static String secondFile = "/Directory1/file2";
-    private final static String path = new File("").getAbsolutePath();
-
-    @Before
-    public void SetUpDirectoryWithTwoFolders() throws IOException, InitializationError {
-        Path existing = Paths.get(path+pathToResource+firstDirectory);
-        FileUtils.deleteDirectory(existing.toFile());
-        if(!(new File(path+pathToResource+firstDirectory).mkdir()))
-            SetUpDirectoryWithTwoFolders();
-        if(!(new File(path+pathToResource+firstFile).createNewFile()))
-            SetUpDirectoryWithTwoFolders();
-        if(!(new File(path+pathToResource+secondDirectory).mkdir()))
-            SetUpDirectoryWithTwoFolders();
-        if(!(new File(path+pathToResource+secondFile).createNewFile()))
-            SetUpDirectoryWithTwoFolders();
-    }
+    @Rule
+    public TemporaryFolder folder1 = new TemporaryFolder();
 
     @Test
-    public void shouldFileTreeCorrectlyReturnItsChildren(){
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory));
+    public void shouldFileTreeCorrectlyReturnItsChildren() throws IOException {
+        FileTree tree = new FileTree(Paths.get(folder1.getRoot().getPath()));
+        folder1.newFile("test");
+        folder1.newFile("test2");
+        folder1.newFile("test3");
 
         Iterable<FileTree> children = tree.getChildren();
 
@@ -45,8 +32,8 @@ public class FileTreeTest {
     }
 
     @Test
-    public void shouldFileTreeNotReturnChildrenOnFile(){
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory+firstFile));
+    public void shouldFileTreeNotReturnChildrenOnFile() throws IOException {
+        FileTree tree = new FileTree(Paths.get(folder1.newFile("test").getPath()));
 
         Iterable<FileTree> children = tree.getChildren();
 
@@ -55,11 +42,11 @@ public class FileTreeTest {
 
     @Test
     public void shouldFileTreeCorrectlyPrintsItPath(){
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory+firstFile));
+        FileTree tree = new FileTree(Paths.get(folder1.getRoot().getPath()));
 
         String actualToString = tree.toString();
 
-        Assertions.assertThat(actualToString).isEqualTo((path+pathToResource+firstDirectory+firstFile).replace('/', '\\'));
+        Assertions.assertThat(actualToString).isEqualTo(folder1.getRoot().getPath());
     }
 
 //    @Test
@@ -96,22 +83,22 @@ public class FileTreeTest {
 
     @Test
     public void shouldBeNotEqualsWithNull() {
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory));
+        FileTree tree = new FileTree(Paths.get(folder1.getRoot().getPath()));
 
         Assertions.assertThat(tree).isNotNull();
     }
 
     @Test
     public void shouldBeEqualsWithSelf() {
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory));
+        FileTree tree = new FileTree(Paths.get(folder1.getRoot().getPath()));
 
         Assertions.assertThat(tree).isEqualTo(tree);
     }
 
     @Test
-    public void shouldBeNotEqualsWithDifferentPath() {
-        FileTree tree = new FileTree(Paths.get(path+pathToResource+firstDirectory));
-        FileTree tree2 = new FileTree(Paths.get(path+pathToResource+secondDirectory));
+    public void shouldBeNotEqualsWithDifferentPath() throws IOException {
+        FileTree tree = new FileTree(Paths.get(folder1.getRoot().getPath()));
+        FileTree tree2 = new FileTree(Paths.get(folder1.newFile("test").getPath()));
 
         Assertions.assertThat(tree.equals(tree2)).isFalse();
     }
