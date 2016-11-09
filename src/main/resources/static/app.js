@@ -10,8 +10,8 @@ myApp.controller('MenuController', ['$scope','$rootScope', function($scope, $roo
             url: 'http://localhost:8080/app/stop',
             crossDomain: true,
             success: function(data) {
+                console.log("Success")
             },
-
             error: function(){
                 alert("error")
             }
@@ -30,7 +30,6 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
 
     $scope.$on("$destroy", function(){
         $scope.disconnect();
-        $scope.$destroy();
     });
 
     $scope.event=""
@@ -101,9 +100,7 @@ myApp.directive('listenerEventsDirective', function() {
 
 myApp.directive('watcher', function() {
     return {
-        scope: {
-            onRemove:"&"
-        },
+        scope: true,
         link: function($scope, $element, $attrs, $transclude) {
             $scope.remove = function() {
                 $element.remove();

@@ -31,6 +31,7 @@ public final class TreeObserverFactory {
     }
 
     public void removeAll() {
+        endPointAccumulator = 0;
         this.observers.clear();
     }
 }
