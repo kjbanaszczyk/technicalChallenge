@@ -1,14 +1,10 @@
 package com.gft.technicalchallenge.reactivex;
 import com.gft.technicalchallenge.model.Event;
-import org.apache.commons.io.FileUtils;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runners.model.InitializationError;
 import rx.Observable;
-import rx.observers.TestSubscriber;
 import rx.subjects.ReplaySubject;
 
 import java.io.File;
@@ -26,7 +22,7 @@ public final class TreeReactiveStreamTest {
         ReplaySubject<Event> testSubscriber = ReplaySubject.create();
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
 
-        Observable<Event> observable = stream.createObservable();
+        Observable<Event> observable = stream.getObservable();
         observable.subscribe(testSubscriber);
         Files.createFile(Paths.get(folder1.getRoot().getPath()+"/test"));
 
@@ -40,7 +36,7 @@ public final class TreeReactiveStreamTest {
         ReplaySubject<Event> testSubscriber = ReplaySubject.create();
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
 
-        Observable<Event> observable = stream.createObservable();
+        Observable<Event> observable = stream.getObservable();
         observable.subscribe(testSubscriber);
         if(new File(folder1.getRoot().getPath()+"/testDir").mkdir())
             Files.createFile(Paths.get(folder1.getRoot().getPath()+"/testDir"+"/test"));
@@ -53,7 +49,7 @@ public final class TreeReactiveStreamTest {
     public void shouldConvertDirectoryToObservable() throws IOException {
 
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-        Assertions.assertThat(stream.createObservable()).isInstanceOf(Observable.class);
+        Assertions.assertThat(stream.getObservable()).isInstanceOf(Observable.class);
 
     }
 
@@ -62,7 +58,7 @@ public final class TreeReactiveStreamTest {
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
         stream.close();
 
-        Assertions.assertThatThrownBy(stream::createObservable).isInstanceOf(ClosedWatchServiceException.class);
+        Assertions.assertThatThrownBy(stream::getObservable).isInstanceOf(ClosedWatchServiceException.class);
     }
 
 }

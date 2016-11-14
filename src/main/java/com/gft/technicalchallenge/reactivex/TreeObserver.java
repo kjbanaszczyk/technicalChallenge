@@ -2,10 +2,13 @@ package com.gft.technicalchallenge.reactivex;
 
 import com.gft.technicalchallenge.model.Event;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import rx.Observer;
+import rx.Subscriber;
 
-public final class TreeObserver implements Observer<Event> {
+import java.util.logging.Logger;
 
+public final class TreeObserver extends Subscriber<Event> {
+
+    private static final Logger LOGGER = Logger.getLogger(TreeObserver.class.getName());
     private SimpMessagingTemplate simpMessagingTemplate;
 
     public String getEndPoint() {
@@ -21,7 +24,7 @@ public final class TreeObserver implements Observer<Event> {
 
     @Override
     public void onCompleted() {
-        System.out.print("Completed");
+        LOGGER.info("Completed");
     }
 
     @Override
@@ -31,8 +34,8 @@ public final class TreeObserver implements Observer<Event> {
 
     @Override
     public void onNext(Event event) {
-        System.out.println(event.getEventType() + event.getPath() + event.getFileName());
-        System.out.println("/events/get/" + endPoint);
+        LOGGER.info(event.getEventType() + event.getPath() + event.getFileName());
+        LOGGER.info("/events/get/" + endPoint);
         simpMessagingTemplate.convertAndSend("/events/get/" + endPoint, event);
     }
 }

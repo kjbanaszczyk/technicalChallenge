@@ -9,7 +9,6 @@ import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.Paths;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class TreeReactiveStreamFactoryTest {
 
@@ -45,8 +44,8 @@ public class TreeReactiveStreamFactoryTest {
 
         treeReactiveStreamFactory.close();
 
-        Assertions.assertThatThrownBy(streamFirst::createObservable).isInstanceOf(ClosedWatchServiceException.class);
-        Assertions.assertThatThrownBy(streamSecond::createObservable).isInstanceOf(ClosedWatchServiceException.class);
+        Assertions.assertThatThrownBy(streamFirst::getObservable).isInstanceOf(ClosedWatchServiceException.class);
+        Assertions.assertThatThrownBy(streamSecond::getObservable).isInstanceOf(ClosedWatchServiceException.class);
 
     }
 

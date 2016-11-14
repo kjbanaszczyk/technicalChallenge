@@ -4,11 +4,17 @@ myApp.controller('MenuController', ['$scope','$rootScope', function($scope, $roo
 
     $scope.closeWatchers = function(){
         $rootScope.$emit("Disconnect", {});
+    };
 
+
+    $scope.destroySession = function(){
         $.ajax({
             type: 'POST',
-            url: 'http://localhost:8080/app/stop',
+            url: 'http://localhost:8080/app/endSession',
             crossDomain: true,
+            xhrFields: {
+               withCredentials: true
+            },
             success: function(data) {
                 console.log("Success")
             },
@@ -34,6 +40,8 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
 
     $scope.event=""
 
+    $scope.websocket=""
+
     $scope.startWatching = function(path){
         $.ajax({
             type: 'POST',
@@ -41,12 +49,18 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
             crossDomain: true,
             contentType: "application/text; charset=UTF-8",
             data: path,
-            dataType: 'json',
+            xhrFields: {
+               withCredentials: true
+            },
+            dataType: 'text',
             success: function(data) {
+                console.log("test1");
+                $scope.websocket=data;
+                console.log("test2");
                 $scope.connect(data);
             },
-            error: function(){
-                alert("error")
+            error: function(data){
+                alert(data.toString())
             }});
     }
 
@@ -69,7 +83,19 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
             stompClient.disconnect();
             stompClient = null;
         }
-        console.log("Disconnected");
+        $.ajax({
+            type: 'POST',
+            url: 'http://localhost:8080/app/stop/' + $scope.websocket,
+            crossDomain: true,
+            xhrFields: {
+               withCredentials: true
+            },
+            success: function(data) {
+                console.log("disconnected from " + $scope.websocket)
+            },
+            error: function(){
+                alert("error")
+            }});
     }
 
 }]);

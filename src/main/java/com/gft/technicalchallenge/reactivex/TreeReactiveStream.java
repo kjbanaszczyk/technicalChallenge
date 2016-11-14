@@ -4,12 +4,13 @@ import com.gft.technicalchallenge.filetree.FileTree;
 import com.gft.technicalchallenge.model.Event;
 import com.gft.technicalchallenge.nodeabstraction.IterableTree;
 import rx.Observable;
+import rx.observables.ConnectableObservable;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -25,7 +26,7 @@ public class TreeReactiveStream implements AutoCloseable {
         this.path = path;
     }
 
-    public Observable<Event> createObservable() throws IOException {
+    public Observable<Event> getObservable() throws IOException {
         if(observable == null) {
             IterableTree<FileTree> iterableTree = new IterableTree<>(new FileTree(path));
             path.register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
@@ -38,10 +39,44 @@ public class TreeReactiveStream implements AutoCloseable {
                 }
             });
 
-            observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat();
+            observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().share();
         }
 
         return observable;
+    }
+
+    private Future<List<Event>> obtainEvents(){
+        return new Future<List<Event>>() {
+            @Override
+            public boolean cancel(boolean mayInterruptIfRunning) {
+                return false;
+            }
+
+            @Override
+            public boolean isCancelled() {
+                return false;
+            }
+
+            @Override
+            public boolean isDone() {
+                return false;
+            }
+
+            @Override
+            public List<Event> get() throws InterruptedException, ExecutionException {
+                WatchKey key = service.take();
+                List<WatchEvent<?>> watchEvents = key.pollEvents();
+                List<Event> events = convertWatchEvent(watchEvents,key);
+                registerNewDirectories(events);
+                key.reset();
+                return events;
+            }
+
+            @Override
+            public List<Event> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+                return null;
+            }
+        };
     }
 
     private class EventObtainer implements Callable<List<Event>> {
@@ -57,7 +92,7 @@ public class TreeReactiveStream implements AutoCloseable {
         }
     }
 
-    private List<Event> convertWatchEvent(List<WatchEvent<?>> watchEvents, WatchKey key){
+    private static List<Event> convertWatchEvent(List<WatchEvent<?>> watchEvents, WatchKey key){
         return watchEvents.stream().map(watchEvent -> new Event(watchEvent, (Path) key.watchable())).collect(Collectors.toList());
     }
 
