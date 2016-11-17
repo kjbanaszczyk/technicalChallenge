@@ -1,10 +1,11 @@
 package com.gft.technicalchallenge.reactivex;
 
+import com.gft.technicalchallenge.factory.TreeReactiveStreamFactory;
 import com.gft.technicalchallenge.filetree.FileTree;
 import com.gft.technicalchallenge.model.Event;
 import com.gft.technicalchallenge.nodeabstraction.IterableTree;
+import org.springframework.stereotype.Component;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 import rx.schedulers.Schedulers;
 
 import java.io.IOException;
@@ -20,10 +21,25 @@ public class TreeReactiveStream implements AutoCloseable {
     private WatchService service;
     private Path path;
     private Observable<Event> observable;
+    private TreeReactiveStreamFactory treeReactiveStreamFactory;
 
-    public TreeReactiveStream(Path path) throws IOException {
-        service = FileSystems.getDefault().newWatchService();
-        this.path = path;
+    TreeReactiveStream(Path path) {
+        try {
+            service = FileSystems.getDefault().newWatchService();
+            this.path = path;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TreeReactiveStream(Path path, TreeReactiveStreamFactory treeReactiveStreamFactory) {
+        try {
+            service = FileSystems.getDefault().newWatchService();
+            this.path = path;
+            this.treeReactiveStreamFactory = treeReactiveStreamFactory;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public Observable<Event> getObservable() throws IOException {
@@ -39,44 +55,18 @@ public class TreeReactiveStream implements AutoCloseable {
                 }
             });
 
-            observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().share();
+            observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().doOnUnsubscribe(() -> {
+                try {
+                    close();
+                     if(treeReactiveStreamFactory!=null)
+                        treeReactiveStreamFactory.remove(this.path.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }).share();
         }
 
         return observable;
-    }
-
-    private Future<List<Event>> obtainEvents(){
-        return new Future<List<Event>>() {
-            @Override
-            public boolean cancel(boolean mayInterruptIfRunning) {
-                return false;
-            }
-
-            @Override
-            public boolean isCancelled() {
-                return false;
-            }
-
-            @Override
-            public boolean isDone() {
-                return false;
-            }
-
-            @Override
-            public List<Event> get() throws InterruptedException, ExecutionException {
-                WatchKey key = service.take();
-                List<WatchEvent<?>> watchEvents = key.pollEvents();
-                List<Event> events = convertWatchEvent(watchEvents,key);
-                registerNewDirectories(events);
-                key.reset();
-                return events;
-            }
-
-            @Override
-            public List<Event> get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-                return null;
-            }
-        };
     }
 
     private class EventObtainer implements Callable<List<Event>> {

@@ -1,84 +1,92 @@
 package com.gft.technicalchallenge.controller;
 
+import com.gft.technicalchallenge.factory.TreeReactiveStreamFactory;
+import com.gft.technicalchallenge.reactivex.TreeReactiveStream;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.mock.web.MockHttpSession;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.File;
 import java.io.IOException;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.nio.file.Paths;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestContext.class})
-@WebAppConfiguration
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class ObserverIT {
 
     @Autowired
     private
-    ObserverController observerController;
+    TreeReactiveStreamFactory factory;
 
-    private MockMvc mockMvc;
+    @Autowired
+    private TestRestTemplate restTemplate;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    @Before
-    public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(observerController)
-                .build();
-    }
-
     @Test
-    public void shouldBeOkWhenPathExistPaths() throws Exception {
-        mockMvc.perform(post("/app/start").
-                contentType(MediaType.TEXT_PLAIN)
-                .content(temporaryFolder.getRoot().toPath().toString()))
-                .andExpect(status().isOk());
+    public void shouldBeOkWhenPathExist() throws Exception {
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start", temporaryFolder.getRoot().getAbsolutePath(), String.class);
+
+        Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
     public void shouldResultWithFileNotFoundWhenPathNotExist() throws Exception {
-        mockMvc.perform(post("/app/start")
-            .contentType(MediaType.TEXT_PLAIN)
-            .content("nonPath"))
-            .andExpect(content().string("File not found"));
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start", "nonPath", String.class);
+
+        Assertions.assertThat(responseEntity.getBody()).isEqualTo("File not found");
     }
 
     @Test
-    public void shouldCloseResourcesOnAppStop() throws Exception {
-        mockMvc.perform(post("/app/stop"))
-                .andExpect(status().isOk());
+    public void shouldReturnSameStreamForSamePathForAllSession() throws IOException {
+        String path = temporaryFolder.getRoot().getAbsolutePath();
+
+        HttpHeaders requestHeadersSession1 = new HttpHeaders();
+        requestHeadersSession1.add("Cookie", "JSESSIONID=" + "1");
+        HttpEntity<String> requestEntitySession1 = new HttpEntity<>(path, requestHeadersSession1);
+
+        HttpHeaders requestHeadersSession2 = new HttpHeaders();
+        requestHeadersSession2.add("Cookie", "JSESSIONID=" + "2");
+        HttpEntity<String> requestEntitySession2 = new HttpEntity<>(path, requestHeadersSession2);
+
+
+        restTemplate.postForEntity("/app/start", requestEntitySession1, String.class);
+        TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
+        restTemplate.postForEntity("/app/start", requestEntitySession2, String.class);
+        TreeReactiveStream stream2 = factory.getReactiveStream(Paths.get(path));
+
+
+        Assertions.assertThat(stream1).isSameAs(stream2);
     }
 
     @Test
-    public void shouldReturnSameEndPointForSamePaths() throws IOException {
-        ResponseEntity<String> firstEndpoint = observerController.startObserving(temporaryFolder.getRoot().toPath().toString(), new MockHttpSession());
-        ResponseEntity<String> secondEndpoint = observerController.startObserving(temporaryFolder.getRoot().toPath().toString(), new MockHttpSession());
+    public void shouldReturnDifferentStreamsWhenSessionEnds() throws IOException, InterruptedException {
+        String path = temporaryFolder.getRoot().getAbsolutePath();
 
-        Assertions.assertThat(firstEndpoint.equals(secondEndpoint));
+        ResponseEntity<String> responseEntity1 = restTemplate.postForEntity("/app/start", path, String.class);
+        TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
+
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", responseEntity1.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(path, requestHeadersSession);
+        restTemplate.postForEntity("/app/endSession", requestEntityToKeepSession, String.class);
+
+        restTemplate.postForEntity("/app/start", path, String.class);
+        TreeReactiveStream stream2 = factory.getReactiveStream(Paths.get(path));
+
+        Assertions.assertThat(stream1).isNotSameAs(stream2);
     }
 
-    @Test
-    public void shouldReturnNotDirectory() throws Exception {
-        mockMvc.perform(post("/app/start")
-                .contentType(MediaType.TEXT_PLAIN)
-                .content(temporaryFolder.newFile().toPath().toString()))
-                .andExpect(content().string("Not directory"));
-    }
+
 
 }

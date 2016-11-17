@@ -1,7 +1,7 @@
 package com.gft.technicalchallenge.controller;
 
-import com.gft.technicalchallenge.controller.scheduler.SessionManager;
-import com.gft.technicalchallenge.controller.scheduler.Subscriptions;
+import com.gft.technicalchallenge.controller.session.SessionManager;
+import com.gft.technicalchallenge.controller.session.Subscriptions;
 import com.gft.technicalchallenge.factory.TreeObserverFactory;
 import com.gft.technicalchallenge.factory.TreeReactiveStreamFactory;
 import com.gft.technicalchallenge.model.Event;
@@ -14,14 +14,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.RequestContextListener;
 import rx.Observable;
-import rx.observables.ConnectableObservable;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Paths;
-import java.util.logging.Logger;
 
 @RestController
 @RequestMapping(path = "/app")
@@ -45,13 +43,14 @@ final class ObserverController {
 
     @CrossOrigin
     @RequestMapping(path = "/start", method = RequestMethod.POST)
-    ResponseEntity<String> startObserving(@RequestBody String path, HttpSession httpSession) throws IOException {
+    @ResponseBody ResponseEntity<String> startObserving(@RequestBody String path, HttpSession httpSession) throws IOException {
 
         TreeReactiveStream treeReactiveStream = treeReactiveStreamFactory.getReactiveStream(Paths.get(path));
         Observable<Event> observable = treeReactiveStream.getObservable();
 
         TreeObserver observer = treeObserverFactory.getObserver();
         subscriptions.addSub(observer.getEndPoint(), observable.subscribe(observer));
+        Logger.info("Sub " + subscriptions + " session " + httpSession.getId());
         Logger.info("Endpoint " + observer.getEndPoint());
 
         httpSession.setAttribute(SUBSCRIPTION, subscriptions);
@@ -62,7 +61,6 @@ final class ObserverController {
     @CrossOrigin
     @RequestMapping(path = "/endSession", method = RequestMethod.POST)
     ResponseEntity endSession(HttpSession httpSession){
-        Logger.info(httpSession.getId());
         httpSession.invalidate();
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -70,25 +68,19 @@ final class ObserverController {
     @CrossOrigin
     @RequestMapping(path = "/stop/{websocket}", method = RequestMethod.POST)
     ResponseEntity stopObservingOnEndPoint(HttpSession httpSession, @PathVariable String websocket) throws IOException {
-
         Logger.info("Endpoint on close " + websocket);
         subscriptions.unsubscribe(websocket);
         return new ResponseEntity(HttpStatus.OK);
-
     }
 
     @ExceptionHandler(NoSuchFileException.class)
     public ResponseEntity<String> exceptionFileNotFoundHandler(Exception ex){
-
         return new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND);
-
     }
 
     @ExceptionHandler(NotDirectoryException.class)
     public ResponseEntity<String> exceptionNotDirectoryHandler(Exception ex){
-
         return new ResponseEntity<>("Not directory", HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     @Bean

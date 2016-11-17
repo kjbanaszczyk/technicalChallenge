@@ -38,4 +38,5 @@ public final class TreeObserver extends Subscriber<Event> {
         LOGGER.info("/events/get/" + endPoint);
         simpMessagingTemplate.convertAndSend("/events/get/" + endPoint, event);
     }
+
 }

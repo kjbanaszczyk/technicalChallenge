@@ -18,8 +18,8 @@ myApp.controller('MenuController', ['$scope','$rootScope', function($scope, $roo
             success: function(data) {
                 console.log("Success")
             },
-            error: function(){
-                alert("error")
+            error: function(jqXHR){
+                alert(jqXHR.responseText)
             }
         });
     };
@@ -59,8 +59,8 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
                 console.log("test2");
                 $scope.connect(data);
             },
-            error: function(data){
-                alert(data.toString())
+            error: function(jqXHR){
+                alert(jqXHR.responseText)
             }});
     }
 
@@ -93,8 +93,8 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
             success: function(data) {
                 console.log("disconnected from " + $scope.websocket)
             },
-            error: function(){
-                alert("error")
+            error: function(jqXHR){
+                alert(jqXHR.responseText)
             }});
     }
 

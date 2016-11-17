@@ -5,13 +5,14 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 @Service
 public final class TreeReactiveStreamFactory implements AutoCloseable {
 
     private final ConcurrentHashMap<String, TreeReactiveStream> reactiveStreams = new ConcurrentHashMap<>();
+    private final static Logger LOGGER = Logger.getLogger(TreeReactiveStreamFactory.class.getName());
 
     public TreeReactiveStream getReactiveStream(Path path) throws IOException {
 
@@ -19,7 +20,7 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
 
         if (stream != null) return stream;
 
-        stream = new TreeReactiveStream(path);
+        stream = new TreeReactiveStream(path, this);
         reactiveStreams.put(path.toString(), stream);
 
         return stream;
@@ -38,4 +39,7 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
         this.reactiveStreams.clear();
     }
 
+    public void remove(String path) {
+        reactiveStreams.remove(path);
+    }
 }
