@@ -21,7 +21,7 @@ import java.nio.file.Paths;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class ObserverIT {
+public class ObserverITTest {
 
     @Autowired
     private

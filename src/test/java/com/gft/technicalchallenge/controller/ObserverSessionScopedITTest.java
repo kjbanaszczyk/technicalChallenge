@@ -14,7 +14,7 @@ import rx.Subscription;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
-public class ObserverSessionScopedIT {
+public class ObserverSessionScopedITTest {
 
     @Autowired
     private
