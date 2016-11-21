@@ -39,4 +39,26 @@ public class ObserverSessionScopedITTest {
         Assertions.assertThat(subscriptionsFirst.getSub(websocketEndPoint)).isNull();
         Assertions.assertThat(subscription.isUnsubscribed()).isTrue();
     }
+
+    @Test
+    public void sessionScope() throws Exception {
+
+        MockHttpSession sessionFirst = new MockHttpSession();
+        MockHttpSession sessionSecond = new MockHttpSession();
+
+        sessionFirst.changeSessionId();
+        sessionSecond.changeSessionId();
+
+        controller.startObserving(temporaryFolder.getRoot().getAbsolutePath(), sessionFirst);
+        controller.startObserving(temporaryFolder.getRoot().getAbsolutePath(), sessionSecond);
+
+        Subscriptions subscriptionsFirst = (Subscriptions) sessionFirst.getAttribute("scopedTarget.subscriptions");
+        Subscriptions subscriptionsSecond = (Subscriptions) sessionSecond.getAttribute("scopedTarget.subscriptions");
+
+        System.out.println(subscriptionsFirst+"SDCAS");
+        System.out.println(subscriptionsSecond+"FRST");
+
+        Assertions.assertThat(subscriptionsFirst).isNotSameAs(subscriptionsSecond);
+
+    }
 }

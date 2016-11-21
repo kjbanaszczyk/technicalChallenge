@@ -1,32 +1,38 @@
 var myApp = angular.module('directoryWatcher', []);
 
-myApp.controller('MenuController', ['$scope','$rootScope', function($scope, $rootScope) {
+myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', function($scope, $rootScope, $timeout, $http) {
 
     $scope.closeWatchers = function(){
         $rootScope.$emit("Disconnect", {});
     };
 
+    $scope.label = "";
+    $scope.hideLabel = true;
+
+    $scope.showLabelFun = function (jqXHR) {
+         $scope.hideLabel=false;
+         $timeout(function () {$scope.hideLabel = true}, 1000);
+    };
 
     $scope.destroySession = function(){
-        $.ajax({
-            type: 'POST',
-            url: 'http://localhost:8080/app/endSession',
-            crossDomain: true,
-            xhrFields: {
-               withCredentials: true
-            },
-            success: function(data) {
+
+        $http({
+        method: 'POST',
+        url: 'http://localhost:8080/app/endSession',
+        data: '',
+        withCredentials: true
+        }).then(function successCallback(response) {
                 console.log("Success")
-            },
-            error: function(jqXHR){
-                alert(jqXHR.responseText)
-            }
-        });
+             }, function errorCallback(response) {
+                $scope.label=response.data;
+                $scope.hideLabel=false;
+                $timeout(function () {$scope.hideLabel = true}, 3000);
+             });
     };
 
 }]);
 
-myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scope, $rootScope) {
+myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$timeout', function($scope, $rootScope, $http, $timeout) {
     var stompClient = null;
 
     $rootScope.$on("Disconnect", function(){
@@ -38,30 +44,30 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
         $scope.disconnect();
     });
 
+    $scope.label = "";
+
     $scope.event=""
 
     $scope.websocket=""
 
     $scope.startWatching = function(path){
-        $.ajax({
-            type: 'POST',
-            url: 'http://localhost:8080/app/start',
-            crossDomain: true,
-            contentType: "application/text; charset=UTF-8",
-            data: path,
-            xhrFields: {
-               withCredentials: true
-            },
-            dataType: 'text',
-            success: function(data) {
-                console.log("test1");
-                $scope.websocket=data;
-                console.log("test2");
-                $scope.connect(data);
-            },
-            error: function(jqXHR){
-                alert(jqXHR.responseText)
-            }});
+        $http({
+        method: 'POST',
+        url: 'http://localhost:8080/app/start',
+        data: path,
+        withCredentials: true
+        }).then(function successCallback(response) {
+                    console.log("test1");
+                    $scope.websocket=response.data;
+                    console.log("test2");
+                    $scope.connect(response.data);
+                 }, function errorCallback(response) {
+                    $scope.label=response.data;
+                    console.log(response.toString());
+                    $scope.hideLabel=false;
+                    $timeout(function () {$scope.hideLabel = true}, 1000);
+                 });
+
     }
 
     $scope.connect = function(endPoint) {
@@ -83,19 +89,19 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', function($scop
             stompClient.disconnect();
             stompClient = null;
         }
-        $.ajax({
-            type: 'POST',
-            url: 'http://localhost:8080/app/stop/' + $scope.websocket,
-            crossDomain: true,
-            xhrFields: {
-               withCredentials: true
-            },
-            success: function(data) {
-                console.log("disconnected from " + $scope.websocket)
-            },
-            error: function(jqXHR){
-                alert(jqXHR.responseText)
-            }});
+
+        $http({
+        method: 'POST',
+        url: 'http://localhost:8080/app/stop/' + $scope.websocket,
+        data: '',
+        withCredentials: true
+        }).then(function successCallback(response) {
+                    console.log("disconnected from " + $scope.websocket)
+                 }, function errorCallback(response) {
+                    $scope.label=response.data;
+                    $scope.hideLabel=false;
+                    $timeout(function () {$scope.hideLabel = true}, 1000);
+                 });
     }
 
 }]);

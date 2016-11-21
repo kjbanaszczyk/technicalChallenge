@@ -9,17 +9,21 @@ import com.gft.technicalchallenge.reactivex.TreeObserver;
 import com.gft.technicalchallenge.reactivex.TreeReactiveStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.context.request.RequestContextListener;
 import rx.Observable;
+import rx.Subscription;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Paths;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping(path = "/app")
@@ -54,13 +58,14 @@ final class ObserverController {
         Logger.info("Endpoint " + observer.getEndPoint());
 
         httpSession.setAttribute(SUBSCRIPTION, subscriptions);
-
+        Logger.info("START THIS" + httpSession.getAttribute(SUBSCRIPTION).toString());
         return new ResponseEntity<>(observer.getEndPoint(), HttpStatus.OK);
     }
 
     @CrossOrigin
     @RequestMapping(path = "/endSession", method = RequestMethod.POST)
     ResponseEntity endSession(HttpSession httpSession){
+        Logger.info("END THIS" + httpSession.getAttribute(SUBSCRIPTION).toString());
         httpSession.invalidate();
         return new ResponseEntity(HttpStatus.OK);
     }
@@ -75,16 +80,22 @@ final class ObserverController {
 
     @ExceptionHandler(NoSuchFileException.class)
     public ResponseEntity<String> exceptionFileNotFoundHandler(Exception ex){
-        return new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND);
+        System.out.println(new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND).toString());
+        return new ResponseEntity<>("\"File not found\"", HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(NotDirectoryException.class)
     public ResponseEntity<String> exceptionNotDirectoryHandler(Exception ex){
-        return new ResponseEntity<>("Not directory", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("\"Not directory\"", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Bean
     public RequestContextListener requestContextListener(){
         return new RequestContextListener();
+    }
+
+    @SessionScope
+    public ConcurrentHashMap<String, Subscription> getConcurrentHashMap(){
+        return new ConcurrentHashMap<>();
     }
 }

@@ -1,6 +1,7 @@
 package com.gft.technicalchallenge.factory;
 
 import com.gft.technicalchallenge.reactivex.TreeReactiveStream;
+import com.gft.technicalchallenge.reactivex.TreeReactiveStream.CustomClosable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,7 +21,10 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
 
         if (stream != null) return stream;
 
-        stream = new TreeReactiveStream(path, this);
+        CustomClosable onClosing = () -> {reactiveStreams.remove(path.toString()); LOGGER.info("Size is " + reactiveStreams.size());};
+
+        stream = new TreeReactiveStream(path, onClosing);
+
         reactiveStreams.put(path.toString(), stream);
 
         return stream;
@@ -39,7 +43,4 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
         this.reactiveStreams.clear();
     }
 
-    public void remove(String path) {
-        reactiveStreams.remove(path);
-    }
 }

@@ -17,6 +17,7 @@
 <div id="main-content" class="container">
     <header class="row" ng-controller="MenuController">
         <form class="form-inline">
+            <div ng-hide="hideLabel">{{label}}</div>
             <button add-watcher class="btn btn-default">Add watcher</button>
             <button ng-click="destroySession()" class="btn btn-default">Close Watchers</button>
         </form>
