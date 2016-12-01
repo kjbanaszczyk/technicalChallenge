@@ -7,10 +7,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
-import java.nio.file.ClosedWatchServiceException;
 import java.nio.file.Paths;
-
-import static org.mockito.Mockito.mock;
 
 public class TreeReactiveStreamFactoryTest {
 
