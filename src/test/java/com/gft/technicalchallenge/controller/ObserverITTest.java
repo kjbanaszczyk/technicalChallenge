@@ -14,13 +14,14 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class ObserverITTest {
 
     @Autowired
@@ -44,7 +45,7 @@ public class ObserverITTest {
     public void shouldResultWithFileNotFoundWhenPathNotExist() throws Exception {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start", "nonPath", String.class);
 
-        Assertions.assertThat(responseEntity.getBody()).isEqualTo("File not found");
+        Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"File not found\"");
     }
 
     @Test
@@ -64,7 +65,6 @@ public class ObserverITTest {
         TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
         restTemplate.postForEntity("/app/start", requestEntitySession2, String.class);
         TreeReactiveStream stream2 = factory.getReactiveStream(Paths.get(path));
-
 
         Assertions.assertThat(stream1).isSameAs(stream2);
     }
