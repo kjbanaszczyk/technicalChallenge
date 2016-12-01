@@ -8,17 +8,31 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.stomp.StompFrameHandler;
+import org.springframework.messaging.simp.stomp.StompHeaders;
+import org.springframework.messaging.simp.stomp.StompSession;
+import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.web.socket.client.standard.StandardWebSocketClient;
+import org.springframework.web.socket.messaging.WebSocketStompClient;
+import org.springframework.web.socket.sockjs.client.SockJsClient;
+import org.springframework.web.socket.sockjs.client.Transport;
+import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -33,6 +47,7 @@ public class ObserverITTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
 
     @Test
     public void shouldBeOkWhenPathExist() throws Exception {
