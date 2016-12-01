@@ -34,6 +34,11 @@ public final class TreeObserver extends Subscriber<Event> {
 
     @Override
     public void onNext(Event event) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         LOGGER.info(event.getEventType() + event.getPath() + event.getFileName());
         LOGGER.info("/events/get/" + endPoint);
         simpMessagingTemplate.convertAndSend("/events/get/" + endPoint, event);

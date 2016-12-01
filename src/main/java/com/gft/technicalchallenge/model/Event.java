@@ -5,11 +5,18 @@ import java.nio.file.WatchEvent;
 
 public final class Event {
 
+
     private String path;
     private String fileName;
     private String eventType;
 
     public Event() {
+    }
+
+    public Event(String path, String fileName, String eventType) {
+        this.path = path;
+        this.fileName = fileName;
+        this.eventType = eventType;
     }
 
     public Event(WatchEvent event, Path path){

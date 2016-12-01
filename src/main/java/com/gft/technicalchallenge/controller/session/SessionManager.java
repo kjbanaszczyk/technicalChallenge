@@ -19,13 +19,7 @@ public class SessionManager implements HttpSessionListener {
 
     @Override
     public void sessionDestroyed(HttpSessionEvent se) {
-        HttpSession session = se.getSession();
         LOGGER.info("Ending session: " + se.getSession().getId());
     }
 
-    public static void main(String[] args) {
-        String special = "Something @$ great @$ that.";
-        special = special.replaceAll("\\@\\$", "as");
-        System.out.println(special);
-    }
 }

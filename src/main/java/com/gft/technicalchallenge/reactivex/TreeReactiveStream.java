@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public class TreeReactiveStream implements AutoCloseable {
 
@@ -26,44 +27,42 @@ public class TreeReactiveStream implements AutoCloseable {
     }
 
     public TreeReactiveStream(Path path, CustomClosable onClosing) {
-        try {
-            service = FileSystems.getDefault().newWatchService();
             this.path = path;
             this.onClosing = onClosing;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public Observable<Event> getObservable() throws IOException {
         if (observable != null) return observable;
 
+        service = FileSystems.getDefault().newWatchService();
+
         IterableTree<FileTree> iterableTree = new IterableTree<>(new FileTree(path));
         path.register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-        iterableTree.forEach(o -> {
-            try {
-                if (o.getPath().toFile().isDirectory())
-                    o.getPath().register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+
+        List<Event> convertedList = StreamSupport.stream(iterableTree.spliterator(),false).
+                map(o -> {
+                    try {
+                        if (o.getPath().toFile().isDirectory())
+                            o.getPath().register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return new Event(o.getPath().toString(),o.getPath().getFileName().toString(), "Existing");
+                })
+                .collect(Collectors.toList());
 
         observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().doOnUnsubscribe(() -> {
             try {
-                onClosing.onClosing();
                 close();
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).share();
-
+        }).share().startWith(Observable.from(convertedList).subscribeOn(Schedulers.io()));
 
         return observable;
     }
 
     private class EventObtainer implements Callable<List<Event>> {
-
         @Override
         public List<Event> call() throws InterruptedException {
             WatchKey key = service.take();
@@ -72,6 +71,7 @@ public class TreeReactiveStream implements AutoCloseable {
             registerNewDirectories(events);
             key.reset();
             return events;
+
         }
     }
 
@@ -97,14 +97,16 @@ public class TreeReactiveStream implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        service.close();
+        observable = null;
+        onClosing.onClosing();
+        if(service!=null) {
+            service.close();
+        }
     }
 
     @FunctionalInterface
     public interface CustomClosable {
-
         void onClosing();
-
     }
 
 }
