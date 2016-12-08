@@ -46,31 +46,42 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
 
     $scope.label = "";
 
-    $scope.event=""
+    $scope.event="";
 
-    $scope.websocket=""
+    $scope.websocket="";
 
-    $scope.startWatching = function(path){
+    $scope.obtainEndPoint = function(path){
+        $http({
+                method: 'GET',
+                url: 'http://localhost:8080/app/obtainEndPoint',
+                withCredentials: true
+                }).then(function successCallback(response) {
+                            $scope.connect(response.data, $scope.startWatching, path, response.data);
+                         }, function errorCallback(response) {
+                            $scope.label=response.data;
+                            console.log(response.toString());
+                            $scope.hideLabel=false;
+                            $timeout(function () {$scope.hideLabel = true}, 1000);
+                         });
+    }
+
+    $scope.startWatching = function(path, endPoint){
         $http({
         method: 'POST',
-        url: 'http://localhost:8080/app/start',
+        url: 'http://localhost:8080/app/start/'+endPoint,
         data: path,
         withCredentials: true
         }).then(function successCallback(response) {
-                    console.log("test1");
                     $scope.websocket=response.data;
-                    console.log("test2");
-                    $scope.connect(response.data);
                  }, function errorCallback(response) {
                     $scope.label=response.data;
                     console.log(response.toString());
                     $scope.hideLabel=false;
                     $timeout(function () {$scope.hideLabel = true}, 1000);
                  });
-
     }
 
-    $scope.connect = function(endPoint) {
+    $scope.connect = function(endPoint, callback, path, response) {
         var socket = new SockJS('http://localhost:8080/gs-guide-websocket');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
@@ -81,6 +92,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
                           JSON.parse(event.body).eventType;
                 });
             });
+            callback(path, response);
         });
     }
 
@@ -123,7 +135,7 @@ myApp.directive('listenerEventsDirective', function() {
         link: function(scope, element) {
             scope.$watch('event', function(newValue, oldValue) {
                 if(newValue){
-                    element.append("<tr><td>" + newValue + "</td></tr>");
+                    element.append("<tr><td>" + newValue + "<br/></td></tr>");
                 }
             });
         }

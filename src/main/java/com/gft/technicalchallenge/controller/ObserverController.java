@@ -1,6 +1,7 @@
 package com.gft.technicalchallenge.controller;
 
 import com.gft.technicalchallenge.controller.session.SessionManager;
+import com.gft.technicalchallenge.controller.session.Subscriptions;
 import com.gft.technicalchallenge.factory.TreeObserverFactory;
 import com.gft.technicalchallenge.factory.TreeReactiveStreamFactory;
 import com.gft.technicalchallenge.model.Event;
@@ -41,21 +42,26 @@ final class ObserverController {
     private static final String SUBSCRIPTION = "Subscriptions";
 
     @Autowired
-    private
-    ConcurrentHashMap<String,Subscription> subscriptionsByWSEndpointHashMap;
+    private Subscriptions<Event> subscriptions;
 
     @CrossOrigin
-    @RequestMapping(path = "/start", method = RequestMethod.POST)
-    @ResponseBody ResponseEntity<String> startObserving(@RequestBody String path, HttpSession httpSession) throws IOException {
+    @RequestMapping(path = "/start/{endPoint}", method = RequestMethod.POST)
+    @ResponseBody ResponseEntity startObserving(@RequestBody String path, @PathVariable String endPoint, HttpSession httpSession) throws IOException {
+
         TreeReactiveStream treeReactiveStream = treeReactiveStreamFactory.getReactiveStream(Paths.get(path));
         Observable<Event> observable = treeReactiveStream.getObservable();
 
+        subscriptions.subscribe(endPoint, observable);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @CrossOrigin
+    @RequestMapping(path = "/obtainEndPoint", method = RequestMethod.GET)
+    @ResponseBody ResponseEntity<String> obtainEndPoint() throws IOException {
         TreeObserver observer = treeObserverFactory.getObserver();
 
-        subscriptionsByWSEndpointHashMap.put(observer.getEndPoint(), observable.subscribe(observer));
-
-        Logger.info("Sub " + subscriptionsByWSEndpointHashMap + " session " + httpSession.getId());
-        Logger.info("Endpoint " + observer.getEndPoint());
+        subscriptions.addSubscriber(observer.getEndPoint(), observer);
 
         return new ResponseEntity<>(observer.getEndPoint(), HttpStatus.OK);
     }
@@ -63,14 +69,6 @@ final class ObserverController {
     @CrossOrigin
     @RequestMapping(path = "/endSession", method = RequestMethod.POST)
     ResponseEntity endSession(HttpSession httpSession){
-
-        Logger.info("End session " + httpSession.getId());
-
-        subscriptionsByWSEndpointHashMap.forEach((key, sub) -> {
-            sub.unsubscribe();
-            Logger.info("Unsubscribed: " + sub.isUnsubscribed() + " - " + sub.toString() );
-        });
-
         httpSession.invalidate();
 
         return new ResponseEntity(HttpStatus.OK);
@@ -82,7 +80,7 @@ final class ObserverController {
 
         Logger.info("Endpoint on close " + websocket);
 
-        subscriptionsByWSEndpointHashMap.remove(websocket).unsubscribe();
+        subscriptions.unsubscribe(websocket);
 
         return new ResponseEntity(HttpStatus.OK);
     }

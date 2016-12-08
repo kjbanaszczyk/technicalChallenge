@@ -27,7 +27,7 @@ public final class TreeReactiveStreamTest {
 
         ReplaySubject<Event> testSubscriber = ReplaySubject.create();
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-
+        stream.initialize();
         Observable<Event> observable = stream.getObservable();
         observable.subscribe(testSubscriber);
         Files.createFile(Paths.get(folder1.getRoot().getPath() + "/test"));
@@ -43,7 +43,7 @@ public final class TreeReactiveStreamTest {
         TestSubscriber<Event> testSubscriberFirst = new TestSubscriber<>();
         TestSubscriber<Event> testSubscriberSecond = new TestSubscriber<>();
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()), closable);
-
+        stream.initialize();
         Observable<Event> observable = stream.getObservable();
         observable.subscribe(testSubscriberFirst);
         observable.subscribe(testSubscriberSecond);
@@ -61,37 +61,23 @@ public final class TreeReactiveStreamTest {
     }
 
     @Test
-    public void shouldReturnNewObservableAfterClose() throws IOException {
+    public void shouldThrowClosedWatchServiceAfterClose() throws IOException {
 
         TreeReactiveStream treeReactiveStream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-        Observable<Event> instanceFirst = treeReactiveStream.getObservable();
-
-        treeReactiveStream.close();
-        Observable<Event> instanceSecond = treeReactiveStream.getObservable();
-
-        Assertions.assertThat(instanceFirst).isNotSameAs(instanceSecond);
-
-    }
-
-    @Test
-    public void shouldReopenResourceAfterClose() throws IOException {
-
-        TreeReactiveStream treeReactiveStream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-        treeReactiveStream.getObservable();
-        treeReactiveStream.close();
-        Assertions.assertThatThrownBy(treeReactiveStream::close).isInstanceOf(ClosedWatchServiceException.class);
-
+        treeReactiveStream.initialize();
         treeReactiveStream.getObservable();
 
-        Assertions.assertThatThrownBy(treeReactiveStream::close).isNull();
+        treeReactiveStream.close();
+
+        Assertions.assertThatThrownBy(treeReactiveStream::getObservable).isInstanceOf(ClosedWatchServiceException.class);
     }
 
-    @Test(timeout = 1000)
+    @Test(timeout = 3000)
     public void shouldRegisterNewDirectory() throws IOException, InterruptedException {
 
         ReplaySubject<Event> testSubscriber = ReplaySubject.create();
         TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-
+        stream.initialize();
         Observable<Event> observable = stream.getObservable();
         observable.subscribe(testSubscriber);
         if (new File(folder1.getRoot().getPath() + "/testDir").mkdir())
@@ -102,21 +88,17 @@ public final class TreeReactiveStreamTest {
     }
 
     @Test
-    public void shouldConvertDirectoryToObservable() throws IOException {
-
-        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
-        Assertions.assertThat(stream.getObservable()).isInstanceOf(Observable.class);
-
-    }
-
-    @Test
     public void shouldCloseResources() throws Exception {
-        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()));
+
+        TreeReactiveStream.CustomClosable closable = mock(TreeReactiveStream.CustomClosable.class);
+        TreeReactiveStream stream = new TreeReactiveStream(Paths.get(folder1.getRoot().getPath()), closable);
+        stream.initialize();
 
         stream.getObservable();
         stream.close();
 
-        Assertions.assertThatThrownBy(stream::close).isInstanceOf(ClosedWatchServiceException.class);
+        verify(closable, times(1)).onClosing();
+
     }
 
 }

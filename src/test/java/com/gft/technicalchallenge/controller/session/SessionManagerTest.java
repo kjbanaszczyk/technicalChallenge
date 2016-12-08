@@ -14,13 +14,12 @@ public class SessionManagerTest {
 
     @Test
     public void shouldSetUpSessionIntervalOnSessionCreated() throws Exception {
-
         HttpSession session = new MockHttpSession();
 
         HttpSessionListener sessionListener = new SessionManager();
         sessionListener.sessionCreated(new HttpSessionEvent(session));
 
         Assertions.assertThat(session.getMaxInactiveInterval()).isEqualTo(300);
-
     }
+
 }

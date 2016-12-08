@@ -15,20 +15,32 @@ public final class TreeReactiveStreamFactory implements AutoCloseable {
     private final ConcurrentHashMap<String, TreeReactiveStream> reactiveStreams = new ConcurrentHashMap<>();
     private final static Logger LOGGER = Logger.getLogger(TreeReactiveStreamFactory.class.getName());
 
+    /**
+     * ?
+     * @param path
+     * @return
+     * @throws IOException
+     */
     public TreeReactiveStream getReactiveStream(Path path) throws IOException {
 
         TreeReactiveStream stream = reactiveStreams.get(path.toString());
 
-        if (stream != null) return stream;
+        if (stream == null){
+            CustomClosable onClosing = () -> {reactiveStreams.remove(path.toString()); LOGGER.info("Size is " + reactiveStreams.size());};
+            stream = new TreeReactiveStream(path, onClosing);
+            stream.initialize();
 
-        CustomClosable onClosing = () -> {reactiveStreams.remove(path.toString()); LOGGER.info("Size is " + reactiveStreams.size());};
+            TreeReactiveStream doubleCheck = reactiveStreams.putIfAbsent(path.toString(), stream);
 
-        stream = new TreeReactiveStream(path, onClosing);
+            if(doubleCheck != null) {
 
-        reactiveStreams.put(path.toString(), stream);
+                stream.close();
+
+                return doubleCheck;
+            }
+        }
 
         return stream;
-
     }
 
     @Override

@@ -6,59 +6,76 @@ import com.gft.technicalchallenge.nodeabstraction.IterableTree;
 import rx.Observable;
 import rx.schedulers.Schedulers;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+@ThreadSafe
 public class TreeReactiveStream implements AutoCloseable {
+
+    private enum State {
+        NEW, RUNNING, CLOSED
+    }
 
     private static final Logger LOGGER = Logger.getLogger(TreeReactiveStream.class.getName());
     private WatchService service;
     private Path path;
     private Observable<Event> observable;
     private CustomClosable onClosing;
+    private AtomicReference<State> state = new AtomicReference<>(State.NEW);
 
-    TreeReactiveStream(Path path) {
-        this(path, () -> {} );
-    }
-
-    public TreeReactiveStream(Path path, CustomClosable onClosing) {
-            this.path = path;
-            this.onClosing = onClosing;
-    }
-
-    public Observable<Event> getObservable() throws IOException {
-        if (observable != null) return observable;
-
+    TreeReactiveStream(Path path) throws IOException {
+        this(path, () -> {
+        });
         service = FileSystems.getDefault().newWatchService();
+    }
 
-        IterableTree<FileTree> iterableTree = new IterableTree<>(new FileTree(path));
-        path.register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+    public TreeReactiveStream(Path path, CustomClosable onClosing) throws IOException {
+        this.path = path;
+        this.onClosing = onClosing;
+        service = FileSystems.getDefault().newWatchService();
+    }
 
-        List<Event> convertedList = StreamSupport.stream(iterableTree.spliterator(),false).
-                map(o -> {
-                    try {
-                        if (o.getPath().toFile().isDirectory())
-                            o.getPath().register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    return new Event(o.getPath().toString(),o.getPath().getFileName().toString(), "Existing");
-                })
-                .collect(Collectors.toList());
+    public void initialize() throws IOException {
+        if (state.get() == State.NEW) {
+            IterableTree<FileTree> iterableTree = new IterableTree<>(new FileTree(path));
+            path.register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
 
-        observable = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().doOnUnsubscribe(() -> {
-            try {
-                close();
-            } catch (Exception e) {
-                e.printStackTrace();
+            List<Event> convertedList = StreamSupport.stream(iterableTree.spliterator(), false).
+                    map(o -> {
+                        try {
+                            if (o.getPath().toFile().isDirectory())
+                                o.getPath().register(service, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        return new Event(o.getPath().toString(), o.getPath().getFileName().toString(), "Existing");
+                    })
+                    .collect(Collectors.toList());
+
+            Observable<Event> creates = Observable.fromCallable(new EventObtainer()).flatMap(Observable::from).subscribeOn(Schedulers.io()).repeat().doOnUnsubscribe(() -> {
+                try {
+                    close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).share().startWith(Observable.from(convertedList).subscribeOn(Schedulers.io()));
+
+            if (state.compareAndSet(State.NEW, State.RUNNING)) {
+                observable = creates;
             }
-        }).share().startWith(Observable.from(convertedList).subscribeOn(Schedulers.io()));
+        }
+    }
 
+    public Observable<Event> getObservable() throws ClosedWatchServiceException{
+        if(state.get()==State.CLOSED)
+            throw new ClosedWatchServiceException();
         return observable;
     }
 
@@ -97,9 +114,8 @@ public class TreeReactiveStream implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        observable = null;
-        onClosing.onClosing();
-        if(service!=null) {
+        if (state.compareAndSet(State.RUNNING, State.CLOSED)) {
+            onClosing.onClosing();
             service.close();
         }
     }

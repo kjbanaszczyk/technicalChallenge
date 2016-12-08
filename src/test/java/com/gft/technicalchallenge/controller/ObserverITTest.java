@@ -12,10 +12,7 @@ import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -51,14 +48,30 @@ public class ObserverITTest {
 
     @Test
     public void shouldBeOkWhenPathExist() throws Exception {
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start", temporaryFolder.getRoot().getAbsolutePath(), String.class);
+
+        ResponseEntity<String> endPoint = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+
+        String path = temporaryFolder.getRoot().getAbsolutePath();
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPoint.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(path, requestHeadersSession);
+
+
+        ResponseEntity responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
 
         Assertions.assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     @Test
     public void shouldResultWithFileNotFoundWhenPathNotExist() throws Exception {
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start", "nonPath", String.class);
+
+        ResponseEntity<String> endPoint = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPoint.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>("nonPath", requestHeadersSession);
+
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
 
         Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"File not found\"");
     }
@@ -75,7 +88,6 @@ public class ObserverITTest {
         requestHeadersSession2.add("Cookie", "JSESSIONID=" + "2");
         HttpEntity<String> requestEntitySession2 = new HttpEntity<>(path, requestHeadersSession2);
 
-
         restTemplate.postForEntity("/app/start", requestEntitySession1, String.class);
         TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
         restTemplate.postForEntity("/app/start", requestEntitySession2, String.class);
@@ -85,19 +97,29 @@ public class ObserverITTest {
     }
 
     @Test
-    public void shouldReturnDifferentStreamsWhenSessionEnds() throws IOException, InterruptedException {
+    public void shouldReturnDifferentStreamsForSamePathWhenSessionEnds() throws IOException, InterruptedException {
         String path = temporaryFolder.getRoot().getAbsolutePath();
 
-        ResponseEntity<String> responseEntity1 = restTemplate.postForEntity("/app/start", path, String.class);
-        TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
+        ResponseEntity<String> endPointFirstSession = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+        ResponseEntity<String> endPointSecondSession = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
 
         HttpHeaders requestHeadersSession = new HttpHeaders();
-        requestHeadersSession.set("Cookie", responseEntity1.getHeaders().get("Set-Cookie").get(0));
-        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(path, requestHeadersSession);
-        restTemplate.postForEntity("/app/endSession", requestEntityToKeepSession, String.class);
+        requestHeadersSession.set("Cookie", endPointFirstSession.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepFirstSession = new HttpEntity<>(path, requestHeadersSession);
 
-        restTemplate.postForEntity("/app/start", path, String.class);
+        requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPointSecondSession.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSecondSession = new HttpEntity<>(path, requestHeadersSession);
+
+
+        restTemplate.postForEntity("/app/start/" + endPointFirstSession.getBody(), requestEntityToKeepFirstSession, String.class);
+        TreeReactiveStream stream1 = factory.getReactiveStream(Paths.get(path));
+
+        restTemplate.postForEntity("/app/endSession", requestEntityToKeepFirstSession, String.class);
+
+        restTemplate.postForEntity("/app/start/" + endPointSecondSession.getBody(), requestEntityToKeepSecondSession, String.class);
         TreeReactiveStream stream2 = factory.getReactiveStream(Paths.get(path));
+
 
         Assertions.assertThat(stream1).isNotSameAs(stream2);
     }

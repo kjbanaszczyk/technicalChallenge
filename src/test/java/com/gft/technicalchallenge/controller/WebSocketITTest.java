@@ -11,6 +11,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
@@ -55,15 +58,23 @@ public class WebSocketITTest {
     @Test
     public void shouldReceiveStompMessageOnDirectoryCreated() throws InterruptedException, ExecutionException, TimeoutException, IOException {
         String path = temporaryFolder.getRoot().getAbsolutePath();
+
+        ResponseEntity<String> endPointFirstSession = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPointFirstSession.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepFirstSession = new HttpEntity<>(path, requestHeadersSession);
+
         WebSocketStompClient client = new WebSocketStompClient(new SockJsClient(transportList));
         StompSession session = client.connect(WEBSOCKET_URI, new StompSessionHandlerAdapter() {
         }).get(5, TimeUnit.SECONDS);
 
-        String endPoint = restTemplate.postForEntity("/app/start", path, String.class).getBody();
-        session.subscribe(EVENTS_GET + endPoint, new DefaultStompFrameHandler());
+
+        restTemplate.postForEntity("/app/start/" + endPointFirstSession.getBody(), requestEntityToKeepFirstSession, String.class).getBody();
+        session.subscribe(EVENTS_GET + endPointFirstSession.getBody(), new DefaultStompFrameHandler());
         temporaryFolder.newFolder(FILE_NAME);
 
         Thread.sleep(1000);
+
 
         Assertions.assertThat(blockingQueue.size()).isEqualTo(1);
         Assertions.assertThat(blockingQueue.peek().getFileName()).isEqualTo(FILE_NAME);
@@ -73,17 +84,25 @@ public class WebSocketITTest {
     public void shouldSendMessageToAllSubscribers() throws InterruptedException, ExecutionException, TimeoutException, IOException {
 
         String path = temporaryFolder.getRoot().getAbsolutePath();
+
+        ResponseEntity<String> endPointFirstSession = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPointFirstSession.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepFirstSession = new HttpEntity<>(path, requestHeadersSession);
+
         WebSocketStompClient clientFirst = new WebSocketStompClient(new SockJsClient(transportList));
         StompSession sessionFirst = clientFirst.connect(WEBSOCKET_URI, new StompSessionHandlerAdapter() {})
                 .get(5, TimeUnit.SECONDS);
 
-        String endPointFirst = restTemplate.postForEntity("/app/start", path, String.class).getBody();
-        String endPointSecond = restTemplate.postForEntity("/app/start", path, String.class).getBody();
+
+        restTemplate.postForEntity("/app/start/" + endPointFirstSession.getBody(), requestEntityToKeepFirstSession, String.class).getBody();
         DefaultStompFrameHandler frameHandler = new DefaultStompFrameHandler();
-        sessionFirst.subscribe(EVENTS_GET + endPointFirst, frameHandler);
-        sessionFirst.subscribe(EVENTS_GET + endPointSecond, frameHandler);
+        sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
+        sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
         temporaryFolder.newFile(FILE_NAME);
         Thread.sleep(1000);
+
 
         Assertions.assertThat(blockingQueue.size()).isEqualTo(2);
     }
