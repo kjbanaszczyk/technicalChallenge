@@ -54,6 +54,7 @@ final class ObserverController {
         subscriptions.subscribe(endPoint, observable);
 
         return new ResponseEntity<>(HttpStatus.OK);
+
     }
 
     @CrossOrigin

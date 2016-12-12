@@ -21,6 +21,15 @@
             <button add-watcher class="btn btn-default">Add watcher</button>
             <button ng-click="destroySession()" class="btn btn-default">Close Watchers</button>
         </form>
+        <form>
+            <div class="form-group">
+                <label for="pathToAdd">File to add</label>
+                <input type="text" ng-model="pathToAddFile" id="pathToAdd" class="form-control" placeholder="C://...">
+                <span></span>
+            </div>
+            <button ng-click="addFile(pathToAddFile)" class="btn btn-default">Add file</button>
+            <button ng-click="removeFile(pathToAddFile)" class="btn btn-default">Remove file</button>
+        </form>
     </header>
     <section>
         <div id="watchers-space" class="row">

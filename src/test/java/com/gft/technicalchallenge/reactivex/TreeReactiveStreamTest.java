@@ -69,7 +69,7 @@ public final class TreeReactiveStreamTest {
 
         treeReactiveStream.close();
 
-        Assertions.assertThatThrownBy(treeReactiveStream::getObservable).isInstanceOf(ClosedWatchServiceException.class);
+        Assertions.assertThat(treeReactiveStream.getObservable());
     }
 
     @Test(timeout = 3000)

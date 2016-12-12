@@ -14,6 +14,40 @@ myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', f
          $timeout(function () {$scope.hideLabel = true}, 1000);
     };
 
+    $scope.addFile = function(path){
+     $http({
+        method: 'POST',
+        url: 'http://localhost:8080/addFile',
+        data: path,
+        withCredentials: true
+        }).then(function successCallback(response) {
+                $scope.label=response.data;
+                $scope.hideLabel=false;
+                $timeout(function () {$scope.hideLabel = true}, 3000);
+             }, function errorCallback(response) {
+                $scope.label=response.data;
+                $scope.hideLabel=false;
+                $timeout(function () {$scope.hideLabel = true}, 3000);
+             });
+    }
+
+    $scope.removeFile = function(path){
+         $http({
+            method: 'POST',
+            url: 'http://localhost:8080/removeFile',
+            data: path,
+            withCredentials: true
+            }).then(function successCallback(response) {
+                    $scope.label=response.data;
+                    $scope.hideLabel=false;
+                    $timeout(function () {$scope.hideLabel = true}, 3000);
+                 }, function errorCallback(response) {
+                    $scope.label=response.data;
+                    $scope.hideLabel=false;
+                    $timeout(function () {$scope.hideLabel = true}, 3000);
+                 });
+        }
+
     $scope.destroySession = function(){
 
         $http({
@@ -72,7 +106,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
         data: path,
         withCredentials: true
         }).then(function successCallback(response) {
-                    $scope.websocket=response.data;
+                    $scope.websocket=endPoint;
                  }, function errorCallback(response) {
                     $scope.label=response.data;
                     console.log(response.toString());
@@ -88,8 +122,8 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
             console.log('Connected: ' + frame);
             stompClient.subscribe('/events/get/'+endPoint, function (event) {
                 $scope.$apply(function () {
-                        $scope.event = JSON.parse(event.body).path + ": " +
-                          JSON.parse(event.body).eventType;
+                        $scope.event = "<tr><td style=\"padding: 5px;\">" + JSON.parse(event.body).path + "</td><td style=\"padding: 5px;\">" +
+                          JSON.parse(event.body).eventType + "</td></tr>";
                 });
             });
             callback(path, response);
@@ -128,14 +162,14 @@ myApp.directive("addWatcher", function($compile){
 
 myApp.directive('listenerEventsDirective', function() {
     return{
-        restrict: 'E',
+        restrict: 'A',
         scope: {
             event: '='
         },
         link: function(scope, element) {
             scope.$watch('event', function(newValue, oldValue) {
                 if(newValue){
-                    element.append("<tr><td>" + newValue + "<br/></td></tr>");
+                    element.append(newValue);
                 }
             });
         }

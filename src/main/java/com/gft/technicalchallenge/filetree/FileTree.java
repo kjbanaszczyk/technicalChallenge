@@ -3,6 +3,7 @@ package com.gft.technicalchallenge.filetree;
 import com.gft.technicalchallenge.nodeabstraction.Node;
 
 import java.io.File;
+import java.nio.file.FileSystem;
 import java.nio.file.Path;
 import java.util.LinkedList;
 
@@ -31,6 +32,7 @@ public class FileTree implements Node<FileTree> {
         for(File children : files) {
                 fileTrees.add(new FileTree(children.toPath()));
             }
+
         return fileTrees;
     }
 
