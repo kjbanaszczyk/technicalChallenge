@@ -24,7 +24,7 @@ public final class TreeObserver extends Subscriber<Event> {
 
     @Override
     public void onCompleted() {
-        LOGGER.info("Completed");
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -1,4 +1,5 @@
 var myApp = angular.module('directoryWatcher', []);
+var myHost = "http://" + window.location.host;
 
 myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', function($scope, $rootScope, $timeout, $http) {
 
@@ -17,7 +18,7 @@ myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', f
     $scope.addFile = function(path){
      $http({
         method: 'POST',
-        url: 'http://localhost:8080/addFile',
+        url: myHost + '/addFile',
         data: path,
         withCredentials: true
         }).then(function successCallback(response) {
@@ -34,7 +35,7 @@ myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', f
     $scope.removeFile = function(path){
          $http({
             method: 'POST',
-            url: 'http://localhost:8080/removeFile',
+            url: myHost + '/removeFile',
             data: path,
             withCredentials: true
             }).then(function successCallback(response) {
@@ -52,7 +53,7 @@ myApp.controller('MenuController', ['$scope','$rootScope','$timeout', '$http', f
 
         $http({
         method: 'POST',
-        url: 'http://localhost:8080/app/endSession',
+        url: myHost + '/app/endSession',
         data: '',
         withCredentials: true
         }).then(function successCallback(response) {
@@ -87,7 +88,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
     $scope.obtainEndPoint = function(path){
         $http({
                 method: 'GET',
-                url: 'http://localhost:8080/app/obtainEndPoint',
+                url: myHost + '/app/obtainEndPoint',
                 withCredentials: true
                 }).then(function successCallback(response) {
                             $scope.connect(response.data, $scope.startWatching, path, response.data);
@@ -102,7 +103,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
     $scope.startWatching = function(path, endPoint){
         $http({
         method: 'POST',
-        url: 'http://localhost:8080/app/start/'+endPoint,
+        url: myHost + '/app/start/'+endPoint,
         data: path,
         withCredentials: true
         }).then(function successCallback(response) {
@@ -116,7 +117,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
     }
 
     $scope.connect = function(endPoint, callback, path, response) {
-        var socket = new SockJS('http://localhost:8080/gs-guide-websocket');
+        var socket = new SockJS(myHost + '/gs-guide-websocket');
         stompClient = Stomp.over(socket);
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
@@ -138,7 +139,7 @@ myApp.controller('ConnectionController', ['$scope', '$rootScope', '$http', '$tim
 
         $http({
         method: 'POST',
-        url: 'http://localhost:8080/app/stop/' + $scope.websocket,
+        url: myHost + '/app/stop/' + $scope.websocket,
         data: '',
         withCredentials: true
         }).then(function successCallback(response) {
