@@ -102,7 +102,7 @@ public class WebSocketITTest {
         sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
         sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
         temporaryFolder.newFile(FILE_NAME);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
 
         Assertions.assertThat(blockingQueue.size()).isEqualTo(2);
@@ -131,13 +131,14 @@ public class WebSocketITTest {
         sessionFirst.subscribe(EVENTS_GET + endPointFirst.getBody(), frameHandler);
         sessionFirst.subscribe(EVENTS_GET + endPointSecond.getBody(), frameHandler);
         temporaryFolder.newFile(FILE_NAME);
-        Thread.sleep(1000);
+        Thread.sleep(2000);
+
 
 
         Assertions.assertThat(blockingQueue.size()).isEqualTo(2);
         restTemplate.postForEntity("/app/stop/" + endPointSecond.getBody(), requestEntityToKeepSession, null);
         temporaryFolder.newFile(FILE_NAME+"2");
-        Thread.sleep(1000);
+        Thread.sleep(2000);
         Assertions.assertThat(blockingQueue.size()).isEqualTo(3);
 
     }
