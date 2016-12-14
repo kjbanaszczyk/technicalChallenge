@@ -101,6 +101,7 @@ public class WebSocketITTest {
         DefaultStompFrameHandler frameHandler = new DefaultStompFrameHandler();
         sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
         sessionFirst.subscribe(EVENTS_GET + endPointFirstSession.getBody(), frameHandler);
+        Thread.sleep(2000);
         temporaryFolder.newFile(FILE_NAME);
         Thread.sleep(2000);
 
@@ -130,6 +131,7 @@ public class WebSocketITTest {
         DefaultStompFrameHandler frameHandler = new DefaultStompFrameHandler();
         sessionFirst.subscribe(EVENTS_GET + endPointFirst.getBody(), frameHandler);
         sessionFirst.subscribe(EVENTS_GET + endPointSecond.getBody(), frameHandler);
+        Thread.sleep(2000);
         temporaryFolder.newFile(FILE_NAME);
         Thread.sleep(2000);
 
