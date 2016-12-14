@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
 import org.springframework.messaging.simp.stomp.StompHeaders;
@@ -107,7 +108,39 @@ public class WebSocketITTest {
         Assertions.assertThat(blockingQueue.size()).isEqualTo(2);
     }
 
+    @Test
+    public void shouldUnsubscribeFromOneEndPoint() throws InterruptedException, ExecutionException, TimeoutException, IOException {
 
+        String path = temporaryFolder.getRoot().getAbsolutePath();
+
+        ResponseEntity<String> endPointFirst = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPointFirst.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(path, requestHeadersSession);
+
+        ResponseEntity<String> endPointSecond = restTemplate.exchange("/app/obtainEndPoint", HttpMethod.GET, requestEntityToKeepSession, String.class);
+
+        WebSocketStompClient clientFirst = new WebSocketStompClient(new SockJsClient(transportList));
+        StompSession sessionFirst = clientFirst.connect(WEBSOCKET_URI, new StompSessionHandlerAdapter() {})
+                .get(5, TimeUnit.SECONDS);
+
+        restTemplate.postForEntity("/app/start/" + endPointFirst.getBody(), requestEntityToKeepSession, String.class);
+        restTemplate.postForEntity("/app/start/" + endPointSecond.getBody(), requestEntityToKeepSession, String.class);
+        DefaultStompFrameHandler frameHandler = new DefaultStompFrameHandler();
+        sessionFirst.subscribe(EVENTS_GET + endPointFirst.getBody(), frameHandler);
+        sessionFirst.subscribe(EVENTS_GET + endPointSecond.getBody(), frameHandler);
+        temporaryFolder.newFile(FILE_NAME);
+        Thread.sleep(1000);
+
+
+        Assertions.assertThat(blockingQueue.size()).isEqualTo(2);
+        restTemplate.postForEntity("/app/stop/" + endPointSecond.getBody(), requestEntityToKeepSession, null);
+        temporaryFolder.newFile(FILE_NAME+"2");
+        Thread.sleep(1000);
+        Assertions.assertThat(blockingQueue.size()).isEqualTo(3);
+
+    }
 
     class DefaultStompFrameHandler implements StompFrameHandler {
 

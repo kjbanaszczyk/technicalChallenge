@@ -45,7 +45,6 @@ public class ObserverITTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-
     @Test
     public void shouldBeOkWhenPathExist() throws Exception {
 
@@ -74,6 +73,19 @@ public class ObserverITTest {
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
 
         Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"File not found\"");
+    }
+
+    @Test
+    public void shouldResultWithNotDirectoryWhenTryToObserveFile() throws Exception {
+        temporaryFolder.newFile("test");
+        ResponseEntity<String> endPoint = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
+        HttpHeaders requestHeadersSession = new HttpHeaders();
+        requestHeadersSession.set("Cookie", endPoint.getHeaders().get("Set-Cookie").get(0));
+        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(temporaryFolder.getRoot().getAbsolutePath()+"/test", requestHeadersSession);
+
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
+
+        Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"Not directory\"");
     }
 
     @Test
@@ -119,7 +131,6 @@ public class ObserverITTest {
 
         restTemplate.postForEntity("/app/start/" + endPointSecondSession.getBody(), requestEntityToKeepSecondSession, String.class);
         TreeReactiveStream stream2 = factory.getReactiveStream(Paths.get(path));
-
 
         Assertions.assertThat(stream1).isNotSameAs(stream2);
     }

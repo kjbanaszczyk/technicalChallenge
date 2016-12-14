@@ -20,7 +20,6 @@ public class Subscriptions<T> implements AutoCloseable {
     private ConcurrentHashMap<String, Subscriber<T>> WSEndPointSubscriber;
 
     public Subscriptions() {
-
         this.WSEndPointSubscriptions = new ConcurrentHashMap<>();
         this.WSEndPointSubscriber = new ConcurrentHashMap<>();
     }

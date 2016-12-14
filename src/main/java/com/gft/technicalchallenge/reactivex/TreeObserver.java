@@ -4,6 +4,7 @@ import com.gft.technicalchallenge.model.Event;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import rx.Subscriber;
 
+import java.util.Random;
 import java.util.logging.Logger;
 
 public final class TreeObserver extends Subscriber<Event> {

@@ -12,17 +12,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.context.request.RequestContextListener;
 import rx.Observable;
-import rx.Subscription;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentHashMap;
 
 @RestController
 @RequestMapping(path = "/app")
@@ -102,9 +99,4 @@ final class ObserverController {
         return new RequestContextListener();
     }
 
-    @Bean
-    @SessionScope
-    private ConcurrentHashMap<String, Subscription> getConcurrentHashMap(){
-        return new ConcurrentHashMap<>();
-    }
 }
