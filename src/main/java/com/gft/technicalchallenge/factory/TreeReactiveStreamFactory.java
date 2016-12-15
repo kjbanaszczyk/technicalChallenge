@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.concurrent.ThreadSafe;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -14,34 +15,30 @@ import java.util.logging.Logger;
 @ThreadSafe
 public final class TreeReactiveStreamFactory implements AutoCloseable {
 
-    private final ConcurrentHashMap<String, TreeReactiveStream> reactiveStreams = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Path, TreeReactiveStream> reactiveStreams = new ConcurrentHashMap<>();
     private final static Logger LOGGER = Logger.getLogger(TreeReactiveStreamFactory.class.getName());
 
     public TreeReactiveStream getReactiveStream(Path path) throws IOException {
+        return reactiveStreams.computeIfAbsent(path, this::produce);
+    }
 
-        TreeReactiveStream stream = reactiveStreams.get(path.toString());
-
-        if (stream != null) return stream;
-
+    private TreeReactiveStream produce(Path path) {
         CustomClosable onClosing = () -> {
-            reactiveStreams.remove(path.toString());
+            reactiveStreams.remove(path);
             LOGGER.info("Size is " + reactiveStreams.size());
         };
 
-        stream = new TreeReactiveStream(path, onClosing);
+        TreeReactiveStream stream = new TreeReactiveStream(path, onClosing);
 
-        stream.initialize();
-
-        TreeReactiveStream doubleCheck = reactiveStreams.putIfAbsent(path.toString(), stream);
-
-        if (doubleCheck != null) {
-            stream.resourceClose();
-
-            return doubleCheck;
+        try {
+            stream.initialize();
+        } catch (IOException e) {
+            return null;
         }
 
         return stream;
     }
+
 
     @Override
     public void close() throws IOException {

@@ -33,12 +33,12 @@ public class TreeReactiveStream implements AutoCloseable {
     private CustomClosable onClosing;
     private AtomicReference<State> state = new AtomicReference<>(State.NEW);
 
-    public TreeReactiveStream(Path path) throws IOException {
+    TreeReactiveStream(Path path) {
         this(path, () -> {
         });
     }
 
-    public TreeReactiveStream(Path path, CustomClosable onClosing) throws IOException {
+    public TreeReactiveStream(Path path, CustomClosable onClosing) {
         this.path = path;
         this.onClosing = onClosing;
     }
@@ -123,7 +123,7 @@ public class TreeReactiveStream implements AutoCloseable {
      * Closes only resources without invoking onClosing()
      * @throws IOException - if an I/O error occurs
      */
-    public void resourceClose() throws IOException {
+    void resourceClose() throws IOException {
         if(state.compareAndSet(State.RUNNING, State.CLOSED)) {
             this.service.close();
         }

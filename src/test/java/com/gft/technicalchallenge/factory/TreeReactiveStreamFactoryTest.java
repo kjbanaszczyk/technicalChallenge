@@ -46,8 +46,11 @@ public class TreeReactiveStreamFactoryTest {
         TreeReactiveStream streamSecond = treeReactiveStreamFactory.getReactiveStream(Paths.get(temporaryFolder.newFolder("test").getPath()));
 
         treeReactiveStreamFactory.close();
+        TreeReactiveStream streamFirstPrim = treeReactiveStreamFactory.getReactiveStream(Paths.get(temporaryFolder.getRoot().getPath()));
+        TreeReactiveStream streamSecondPrim = treeReactiveStreamFactory.getReactiveStream(Paths.get(temporaryFolder.getRoot().getPath()+"/test"));
 
-        // TODO: 01/12/2016 Implement assertions
+        Assertions.assertThat(streamFirst).isNotSameAs(streamFirstPrim);
+        Assertions.assertThat(streamSecond).isNotSameAs(streamSecondPrim);
 
     }
 

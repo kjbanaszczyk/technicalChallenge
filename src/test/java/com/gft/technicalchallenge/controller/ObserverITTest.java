@@ -72,20 +72,7 @@ public class ObserverITTest {
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
 
-        Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"File not found\"");
-    }
-
-    @Test
-    public void shouldResultWithNotDirectoryWhenTryToObserveFile() throws Exception {
-        temporaryFolder.newFile("test");
-        ResponseEntity<String> endPoint = restTemplate.getForEntity("/app/obtainEndPoint", String.class);
-        HttpHeaders requestHeadersSession = new HttpHeaders();
-        requestHeadersSession.set("Cookie", endPoint.getHeaders().get("Set-Cookie").get(0));
-        HttpEntity<String> requestEntityToKeepSession = new HttpEntity<>(temporaryFolder.getRoot().getAbsolutePath()+"/test", requestHeadersSession);
-
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity("/app/start/" + endPoint.getBody(), requestEntityToKeepSession, String.class);
-
-        Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"Not directory\"");
+        Assertions.assertThat(responseEntity.getBody()).isEqualTo("\"Could not observe given directory (don't exist or is no directory)\"");
     }
 
     @Test

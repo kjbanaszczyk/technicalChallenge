@@ -46,9 +46,11 @@ final class ObserverController {
     @ResponseBody ResponseEntity startObserving(@RequestBody String path, @PathVariable String endPoint, HttpSession httpSession) throws IOException {
 
         TreeReactiveStream treeReactiveStream = treeReactiveStreamFactory.getReactiveStream(Paths.get(path));
-        Observable<Event> observable = treeReactiveStream.getObservable();
 
-        subscriptions.subscribe(endPoint, observable);
+        if(treeReactiveStream!=null)
+            subscriptions.subscribe(endPoint, treeReactiveStream.getObservable());
+        else
+            throw new IOException();
 
         return new ResponseEntity<>(HttpStatus.OK);
 
@@ -83,15 +85,10 @@ final class ObserverController {
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    @ExceptionHandler(NoSuchFileException.class)
+    @ExceptionHandler(IOException.class)
     public ResponseEntity<String> exceptionFileNotFoundHandler(Exception ex){
         System.out.println(new ResponseEntity<>("File not found", HttpStatus.NOT_FOUND).toString());
-        return new ResponseEntity<>("\"File not found\"", HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(NotDirectoryException.class)
-    public ResponseEntity<String> exceptionNotDirectoryHandler(Exception ex){
-        return new ResponseEntity<>("\"Not directory\"", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>("\"Could not observe given directory (don't exist or is no directory)\"", HttpStatus.NOT_FOUND);
     }
 
     @Bean
